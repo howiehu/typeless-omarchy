@@ -1,6 +1,6 @@
 # Typeless-Omarchy
 
-面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.4.2 预发布版**，只在 x86_64、Typeless 2.2.0 的指定构建上验证过；并非 Typeless 或 Omarchy 官方项目。
+面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.4.3 预发布版**，只在 x86_64、Typeless 2.2.0 的指定构建上验证过；并非 Typeless 或 Omarchy 官方项目。
 
 完整安装、构建与限制说明以 [英文 README](README.md) 为准。
 
@@ -40,3 +40,13 @@ sudo pacman -R typeless-omarchy
 兼容层不读取账户或历史数据库来恢复答案。富文本编辑、焦点在投递前发生变化及官方独立回退行为仍有限制；此前程序退出问题也没有确认根因。请勿提交含账户信息、令牌或私人语音内容的日志与截图。
 
 [版本发布](https://github.com/howiehu/typeless-omarchy/releases) · [验证记录](docs/validation.md) · [官方技术报告](docs/upstream-report.md) · [贡献指南](CONTRIBUTING.md)
+
+## 版权、许可与第三方权利
+
+Copyright (c) 2026 Hao Hu and contributors。[MIT 许可](LICENSE)仅适用于贡献者有权许可的本项目原创贡献，不会将 Typeless、第三方材料或生成的运行副本重新许可为 MIT。
+
+[NOTICE](NOTICE)是中英文统一声明，也随兼容包安装。运行时修补使用官方程序的特定标识符和少量匹配片段；我们不主张这些第三方材料的所有权。官方安装文件保持原样，但生成的本机运行副本包含经过修改的官方材料。
+
+“本机生成、不分发副本、核对代码指纹”均不等于获得官方授权或完成合规审查。Typeless [服务条款](https://www.typeless.com/terms)第 3、7 节包含与反向工程及修改有关的限制；本项目不宣称已确认适用的例外、许可或法律结论。
+
+本项目未经 Typeless 或 Omarchy 背书；相关名称用于说明兼容目标，不表示获得商标许可或官方支持。完整权利边界以 LICENSE 和 NOTICE 为依据。

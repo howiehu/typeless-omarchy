@@ -15,7 +15,7 @@ files = ["CMakeLists.txt", "src/voice.cpp", "data/typeless-voice-addon.conf",
          "runtime/prepare.py", "tests/runtime.py", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
          "tests/native-insert.py", "tests/live-input.py", "tools/install-user.py",
-         "tools/stage-package.py", "docs/validation.md", "LICENSE", "README.md"]
+         "tools/stage-package.py", "docs/validation.md", "LICENSE", "NOTICE", "README.md"]
 for name in files:
     shutil.copy2(root / name, target / Path(name).name)
 names = [Path(name).name for name in files]

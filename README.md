@@ -1,7 +1,7 @@
 # Typeless-Omarchy
 
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Pre-release, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
@@ -33,7 +33,7 @@ Install the official `typeless-bin` separately through Omarchy's AUR installer. 
 Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils` and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.4.2 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.4.3 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package
@@ -105,6 +105,12 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) and [CHANGELO
 
 The Omarchy packaging contribution is [omacom/omarchy-pkgs#1294](https://github.com/omacom/omarchy-pkgs/pull/1294). Its review/build status is independent of this project's releases. The community package is not yet evidence of acceptance into an official distribution repository.
 
-## License
+## Copyright, license and third-party rights
 
-The independent compatibility implementation is MIT licensed; see [LICENSE](LICENSE). Typeless, Electron and all other third-party software retain their own licenses and terms. Typeless and Omarchy names identify compatibility targets and do not imply affiliation.
+Copyright (c) 2026 Hao Hu and contributors. The MIT license in [LICENSE](LICENSE) applies to this project's original contributions only, to the extent contributors hold rights they can license. It does not relicense Typeless, third-party material or generated runtime copies.
+
+[NOTICE](NOTICE) is the shared English/Chinese statement covering third-party rights, vendor-derived matching fragments, names and non-affiliation. It is installed beside LICENSE in the compatibility package. Dependencies and software supplied by their own installers retain their upstream terms and notices.
+
+The private-runtime patch uses vendor-specific identifiers and small matching fragments; no ownership or MIT relicensing of third-party material is claimed. Installed vendor files are unchanged, but the generated runtime contains modified vendor material. Local generation, source fingerprint checks and non-distribution do not establish vendor authorization or legal compliance. Typeless's [Terms of Service](https://www.typeless.com/terms), including sections 3 and 7, contain restrictions relevant to reverse engineering and modification. No applicable exception, permission or legal-clearance determination is represented here.
+
+This project is not affiliated with or endorsed by Typeless or Omarchy. Their names identify compatibility targets; no trademark rights or official support are granted by this project. These notices clarify scope and do not replace a legal review.

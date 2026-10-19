@@ -27,4 +27,4 @@ Keep code changes separate from generated packaging. `tools/stage-package.py` pr
 
 Use synthetic text and sanitized logs. Do not submit tokens, cookies, account databases, personal dictation, core dumps or unredacted desktop captures. Report suspected security vulnerabilities privately as described in [SECURITY.md](SECURITY.md).
 
-Contributions to this repository are licensed under its MIT license. Third-party software keeps its own terms; do not contribute code you cannot license.
+Original contributions are submitted under the MIT license only to the extent contributors hold rights they can grant. Preserve third-party attributions and do not relicense vendor code, match fragments or other third-party material as your own. Read LICENSE and NOTICE before contributing. Local generation and source fingerprint checks are technical safeguards, not evidence of vendor permission or a legal exception.

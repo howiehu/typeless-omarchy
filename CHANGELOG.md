@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.3 — 2026-10-19 — pre-release
+
+- Clarify the copyright attribution as Hao Hu and contributors without changing the MIT license text.
+- Add a shared English/Chinese NOTICE distinguishing original contributions from vendor matching fragments, dependencies and generated runtime material.
+- Explicitly distinguish technical safeguards/non-distribution from vendor permission or legal clearance, with references to the relevant Typeless terms.
+- Install NOTICE beside LICENSE and align the README, contribution guide, report and packaging.
+- Record that X was posted and email outreach was cancelled. Runtime behavior is unchanged.
+
 ## 0.4.2 — 2026-10-19 — pre-release
 
 First standalone public release. Tested on one Omarchy x86_64 desktop; broader desktop and GPU compatibility is not established.

@@ -66,7 +66,7 @@ Omarchy packaging PR: https://github.com/omacom/omarchy-pkgs/pull/1294
 
 ## Implementation, validation and adoption
 
-The independent bridge, patch transformation and tests are MIT licensed. The installed proprietary files remain unchanged; the runtime patch is generated locally only for exact known source hashes. Neither extracted proprietary code nor a patched application bundle is redistributed.
+The project offers its original contributions under MIT only to the extent contributors hold rights they can license. Third-party identifiers and small matching fragments retain any applicable third-party rights; see LICENSE and NOTICE. No complete extracted vendor modules, proprietary app or generated patched bundle are release assets. The installed proprietary files remain unchanged; the runtime patch is generated locally only for exact known source hashes. That does not establish authorization: Typeless’s Terms of Service sections 3 and 7 include restrictions relevant to reverse engineering and modification. This project does not claim an applicable exception, vendor permission or legal clearance.
 
 Headless checks cover protocol validation, socket permissions, caller scoping, archive rewriting/integrity and refusal of unsupported hashes. GUI and human acceptance evidence is listed separately in `docs/validation.md`. One post-restart terminal probe lost input focus; a subsequent cross-workspace run passed. These results do not prove race-free delivery, universal compatibility or crash freedom. The earlier application disappearance had no confirmed root cause.
 
