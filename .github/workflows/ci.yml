@@ -1,0 +1,37 @@
+name: Build and test
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  arch:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    timeout-minutes: 20
+    steps:
+      - name: Install build dependencies
+        run: pacman -Syu --noconfirm --needed git cmake fcitx5 json-c glib2 python dbus systemd desktop-file-utils
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Build and test as an unprivileged user
+        shell: bash
+        run: |
+          useradd --create-home builder
+          chown -R builder:builder "$GITHUB_WORKSPACE"
+          runuser -u builder -- bash -euo pipefail -c '
+            bash -n bin/typeless-omarchy
+            cmake -S . -B build-ci -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
+            cmake --build build-ci --parallel 2
+            ctest --test-dir build-ci --output-on-failure
+            python tools/stage-package.py /tmp/typeless-package
+            cd /tmp/typeless-package
+            makepkg --noconfirm --cleanbuild
+          '

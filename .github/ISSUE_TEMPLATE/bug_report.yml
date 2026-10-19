@@ -1,0 +1,37 @@
+name: Compatibility problem
+description: Report an input, window, packaging or rendering problem.
+body:
+  - type: markdown
+    attributes:
+      value: Use synthetic text. Remove account information, dictated content, cookies and tokens from any logs or screenshots.
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions and desktop
+      description: Include Typeless-Omarchy, Typeless, Omarchy, Hyprland, Fcitx5, architecture, GPU and display scale when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Include the focused application, selected input method and whether a text entry was focused.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and sanitized evidence
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Comparison with workarounds disabled
+      description: If already tested, describe base-only mode or hardware rendering. Do not change your setup solely to fill this field.

@@ -1,0 +1,16 @@
+name: Compatibility improvement
+description: Propose a focused improvement to this compatibility layer.
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: User problem and target environment
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and validation
+      description: Explain how to test the result and preserve the official login, tray and input-method behavior.
+    validations:
+      required: true

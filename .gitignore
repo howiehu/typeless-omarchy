@@ -1,0 +1,14 @@
+/build*/
+/artifacts/
+/release/
+__pycache__/
+*.pyc
+*.o
+*.so
+*.pkg.tar.*
+*.src.tar.*
+*.asar
+*.asar.unpacked/
+*.db
+*.db-*
+*.log
