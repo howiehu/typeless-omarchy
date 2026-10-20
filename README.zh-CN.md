@@ -1,6 +1,6 @@
 # Typeless-Omarchy
 
-面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.0 本地验证版（尚未发布）**，只在 x86_64、Typeless 2.2.0 的指定构建上验证过；并非 Typeless 或 Omarchy 官方项目。
+面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.0 正式发布版**，只在 x86_64、Typeless 2.2.0 的指定构建上验证过；并非 Typeless 或 Omarchy 官方项目。
 
 完整安装、构建与限制说明以 [英文 README](README.md) 为准。
 

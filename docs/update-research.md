@@ -1,8 +1,8 @@
 # Typeless on Omarchy: update strategy research
 
-Research date: 2026-10-20. This note began as research; the recommendation is implemented in the local 0.5.0 validation build. No vendor upgrade, desktop configuration change or publication was performed for this research.
+Research date: 2026-10-20. This note began as research; the recommendation is implemented in the 0.5.0 release. No vendor upgrade, desktop configuration change or publication was performed for this research.
 
-## Recommendation
+## Recommendation (implemented in 0.5.0)
 
 Use one installation authority: keep the existing `typeless-bin` AUR workflow for the official binary, and separately released, explicitly validated compatibility code. For the immediate release, make a small, guarded change suppressing the in-app Debian download/install path and its misleading Restart action. Explain that installation is managed through the package workflow. Preserve useful version information if it can be shown without advertising an unsupported Restart action. This does not require a new updater daemon, a replacement vendor package, or an automatic porting platform.
 
