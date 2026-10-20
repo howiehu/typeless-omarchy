@@ -15,7 +15,12 @@ entry = Gtk.Entry()
 if "--password" in sys.argv:
     entry.set_visibility(False)
 entry.connect("changed", lambda e: output.write_text(e.get_text()))
-window.add(Gtk.Label(label="No editable input") if "--no-entry" in sys.argv else entry)
+if "--click-target" in sys.argv:
+    button = Gtk.Button(label="Isolated pointer regression — synthetic clicks only")
+    button.connect("clicked", lambda _: output.write_text(str(int(output.read_text()) + 1) if output.exists() else "1"))
+    window.add(button)
+else:
+    window.add(Gtk.Label(label="No editable input") if "--no-entry" in sys.argv else entry)
 window.connect("destroy", Gtk.main_quit)
 window.show_all()
 entry.grab_focus()

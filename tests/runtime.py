@@ -55,8 +55,8 @@ class RuntimeTest(unittest.TestCase):
                 (vendor/'typeless').write_bytes(b'executable fixture')
                 (vendor/'libfixture.so').write_bytes(b'original library')
                 (vendor/'resources/helper').write_bytes(b'helper')
-                files={m.MAIN:m.DESKTOP_ANCHOR.encode(),m.ENTRY:m.RESULT_ANCHOR.encode(),
-                       m.STARTUP:m.AUTOSTART_ANCHOR.encode()}
+                files={m.MAIN:(m.DESKTOP_ANCHOR + m.HUD_POINTER_ANCHOR + m.UPDATER_ANCHOR).encode(),m.ENTRY:m.RESULT_ANCHOR.encode(),
+                       m.STARTUP:m.AUTOSTART_ANCHOR.encode(),m.SETTINGS:m.SETTINGS_ANCHOR.encode()}
                 archive(vendor/'resources/app.asar',files)
                 before=(vendor/'resources/app.asar').read_bytes()
                 m.VENDOR=vendor;m.EXPECTED={name:m.sha(data) for name,data in files.items()}
@@ -66,6 +66,9 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual((binary.parent/'libfixture.so').resolve(),vendor/'libfixture.so')
                 self.assertIn(m.IPC.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.ENTRY))
                 self.assertIn(m.AUTOSTART_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.STARTUP))
+                self.assertIn(m.SETTINGS_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.SETTINGS))
+                self.assertIn(m.UPDATER_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.MAIN))
+                self.assertIn(m.HUD_POINTER_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.MAIN))
                 self.assertIn(m.DESKTOP_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.MAIN))
                 self.assertEqual(binary,m.prepare(directory/'cache'))
                 m.EXPECTED[m.ENTRY]='0'*64

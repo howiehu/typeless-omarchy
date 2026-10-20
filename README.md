@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.6, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Local validation build 0.5.0, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -14,11 +14,12 @@ Independent compatibility tools for the official Typeless Linux app on Omarchy, 
 | Dictation | A passive Fcitx module commits to the focused input context without switching the selected Chinese/keyboard engine. |
 | Launch | Runs Typeless on native Wayland and scopes the helper query adapter to Typeless's own process. |
 | Recording HUD | Removes compositor decorations and keeps the `Status` canvas visible across workspaces. Cancel/confirm remain clickable; keyboard focus returns to the preceding live window on the same workspace. |
+| Updates | Suppresses the in-app Debian download/install path and recurring updater notifications. Manual About checks explain the Omarchy/AUR package workflow. |
 | Answers | Keeps official `AI result` cards interactive and visible across workspaces. |
 | Ask Anything recovery | The selected-text replace path opens the official answer card when no eligible Fcitx input context exists, instead of attempting a paste with no reliable target. |
 | Scrolling | Defaults only Typeless to software rendering; this resolved the rectangular text flicker/displacement confirmed on the test desktop. |
 
-The Status rule prevents initial/hover focus but allows pointer interaction. A compositor-local event callback restores keyboard focus after a Status click, only while the preceding window remains visible on the same workspace and the user has not focused something else. It does not commit into an unfocused input context. Interactive answer cards retain their normal focus behavior.
+The Status rule prevents initial/hover focus but allows pointer interaction. A compositor-local event callback restores keyboard focus after a Status click, only while the preceding window remains visible on the same workspace and the user has not focused something else. It does not commit into an unfocused input context. Restoration preserves cursor position in the same synchronous operation without changing the user's global cursor policy. On the supported Wayland runtime, numeric HUD region metadata lets Hyprland exclude transparent areas from mouse hit-testing; a compositor-local 8 ms timer runs only while HUD controls exist. Interactive answer cards retain their normal focus behavior.
 
 The official dashboard, tray, login, onboarding and account profile remain in use. No extra tray icon or persistent service is installed. The compatibility package does not contain the proprietary app, account data or generated runtime copies.
 
@@ -68,7 +69,7 @@ The vendor expects a `typeless-voice` input endpoint, but the inspected Linux pa
 
 The launcher exposes a private `gdbus` adapter for one exact `CurrentInputMethod` query, only to its recorded parent process and while the bridge socket responds. The virtual endpoint is visible to the vendor helper; the actual selected engine stays unchanged. Unrelated calls execute the system `gdbus`. Global PATH and the Fcitx D-Bus service are not replaced.
 
-Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` verifies three vendor source hashes and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites three files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
+Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` verifies four vendor source hashes and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites four files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
 
 A separate startup-command transformation changes only the executable written to the vendor autostart entry when compatibility mode is active. The filename, flags and official enabled/disabled handling are preserved.
 

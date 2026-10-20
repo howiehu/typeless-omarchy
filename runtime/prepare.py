@@ -14,7 +14,9 @@ VENDOR = Path('/opt/Typeless')
 MAIN = 'dist/main/bootstrapPrimaryInstance-D2WJURak.js'
 ENTRY = 'dist/renderer/static/js/CLnu4epW.mjs'
 STARTUP = 'dist/main/index-Dhin5iqu.js'
+SETTINGS = 'dist/renderer/static/js/klfO6li7.mjs'
 EXPECTED = {
+    SETTINGS: '0fcf499c7deaa51421ee817e002c07a87567522d4b5102bea65cd7960bc473fb',
     MAIN: '8d14b7b340113c2bd52943e453bd8c37c3d381c434955765e3d403b66f201c8c',
     ENTRY: '83099ef43191ad8b38d30d6b3f89a43bb78b87ecbe98c1b98db7f6ca1a5c7c62',
     STARTUP: '1bc651a7f4d003b9edf4057f1575b637b4f6d30f65137877b7d167639d3a3d8c',
@@ -32,6 +34,45 @@ DESKTOP_GUARD = r'''const typelessOmarchyManagedDesktop = text =>
   text.split(/\r?\n/).includes('Exec=/usr/bin/typeless-omarchy %U');
 '''
 DESKTOP_HOOK = 'if(!typelessOmarchyManagedDesktop(_0x12df98)){' + DESKTOP_ANCHOR + '}'
+HUD_POINTER_ANCHOR = "Jr=(_0xcbba16,_0x5ae9ae)=>{const _0x238f1b=_0x1cd5da;"
+HUD_POINTER_HOOK = HUD_POINTER_ANCHOR + "typelessOmarchyHudState(_0xcbba16,_0x5ae9ae);"
+# Wayland does not apply the vendor's shaped/ignored window input as expected.
+# Report idle state through this internal HUD title; Hyprland excludes that
+# exact window from hit-testing. Main/login/answer window titles are untouched.
+HUD_STATE = r'''const typelessOmarchyHudWindows = new WeakMap();
+const typelessOmarchyHudState = (window, positions) => {
+  if (process.env.TYPELESS_OMARCHY_ACTIVE !== '1' || !process.env.WAYLAND_DISPLAY ||
+      !window || window.isDestroyed()) return;
+  const regions = og(positions).filter(r => [r.x,r.y,r.width,r.height].every(Number.isFinite));
+  const title = regions.length ? 'Status [' + regions.map(r => [r.x,r.y,r.width,r.height].map(Math.ceil).join(',')).join(';') + ']' : 'Status (idle)';
+  if (!typelessOmarchyHudWindows.has(window)) {
+    window.on('page-title-updated', event => {
+      event.preventDefault();
+      const wanted = typelessOmarchyHudWindows.get(window);
+      if (window.getTitle() !== wanted) window.setTitle(wanted);
+    });
+  }
+  typelessOmarchyHudWindows.set(window, title);
+  if (window.getTitle() !== title) window.setTitle(title);
+};
+'''
+UPDATER_ANCHOR = "['setupIPC'](){const _0x514746=_0x1cd5da;"
+UPDATER_POLICY = r'''import {configurePackageUpdates as typelessOmarchyConfigureUpdates} from 'file:///usr/lib/typeless-omarchy/runtime/update-policy.mjs';
+const typelessOmarchyShowUpdatePolicy = () => {
+  const zh = _0x375e04.getLocale().startsWith('zh');
+  return _0x47aeda.showMessageBox({type:'info',title:'Typeless',buttons:[zh?'确定':'OK'],
+    message:zh?'Typeless 通过包管理器更新':'Typeless updates are managed through packages',
+    detail:zh?'请通过 Omarchy 的 AUR 更新流程更新 typeless-bin，并安装与之匹配的 Typeless-Omarchy。当前兼容层已验证官方 2.2.0 构建；新构建需先完成适配验证。':'Update typeless-bin through the Omarchy AUR workflow and use a matching Typeless-Omarchy release. This compatibility layer validates the official 2.2.0 build; new builds require compatibility validation.'});
+};
+'''
+UPDATER_HOOK = UPDATER_ANCHOR + """if(typelessOmarchyConfigureUpdates({
+  ipcMain:_0x11c115,updater:we,controller:this,
+  active:process.env.TYPELESS_OMARCHY_ACTIVE === '1',platform:process.platform,
+  version:_0x375e04.getVersion(),showPolicy:typelessOmarchyShowUpdatePolicy}))return;"""
+SETTINGS_ANCHOR = "const _0x242200=await window['ipcRenderer']['invoke']('updater:check-for-update');"
+SETTINGS_HOOK = SETTINGS_ANCHOR + """if(_0x242200?.managedByPackageManager){
+  _0x4aed12();await window.ipcRenderer.invoke('typeless-omarchy:show-update-policy');return;
+}"""
 IPC = "typeless-omarchy:has-input"
 MAIN_HOOK = r'''
 // Independent Typeless-Omarchy compatibility hook: no text or account data.
@@ -123,6 +164,9 @@ def prepare(cache):
     for name, digest in EXPECTED.items():
         if sha(sources[name]) != digest:
             raise ValueError('Unsupported Typeless build; runtime compatibility patches were not applied')
+    settings = sources[SETTINGS].decode()
+    if settings.count(SETTINGS_ANCHOR) != 1:
+        raise ValueError('Vendor About update handler changed')
     entry = sources[ENTRY].decode()
     if entry.count(RESULT_ANCHOR) != 1:
         raise ValueError('Vendor completion handler changed')
@@ -132,7 +176,12 @@ def prepare(cache):
     main = sources[MAIN].decode()
     if main.count(DESKTOP_ANCHOR) != 1:
         raise ValueError('Vendor desktop cleanup changed')
-    changed = {MAIN: (DESKTOP_GUARD + main.replace(DESKTOP_ANCHOR, DESKTOP_HOOK) + MAIN_HOOK).encode(),
+    if main.count(HUD_POINTER_ANCHOR) != 1:
+        raise ValueError('Vendor HUD pointer handler changed')
+    if main.count(UPDATER_ANCHOR) != 1:
+        raise ValueError('Vendor updater IPC handler changed')
+    main = main.replace(HUD_POINTER_ANCHOR, HUD_POINTER_HOOK).replace(UPDATER_ANCHOR, UPDATER_HOOK)
+    changed = {SETTINGS: settings.replace(SETTINGS_ANCHOR, SETTINGS_HOOK).encode(), MAIN: (DESKTOP_GUARD + HUD_STATE + UPDATER_POLICY + main.replace(DESKTOP_ANCHOR, DESKTOP_HOOK) + MAIN_HOOK).encode(),
                ENTRY: entry.replace(RESULT_ANCHOR, RESULT_HOOK).encode(),
                STARTUP: (AUTOSTART_ROUTER + startup.replace(AUTOSTART_ANCHOR, AUTOSTART_HOOK)).encode()}
     vendor_stat = (VENDOR / 'typeless').stat()

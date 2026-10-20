@@ -7,7 +7,7 @@ url='https://github.com/howiehu/typeless-omarchy'
 license=('MIT')
 depends=('fcitx5' 'json-c' 'glib2' 'python' 'systemd' 'desktop-file-utils')
 makedepends=('cmake' 'gcc' 'pkgconf')
-checkdepends=('dbus' 'lua')
+checkdepends=('dbus' 'lua' 'nodejs')
 optdepends=('typeless-bin: separately installed official Typeless application (AUR)'
             'omarchy: explicit per-user desktop setup')
 options=('!debug')

@@ -93,3 +93,21 @@ The prior community Status rule used `no_focus=true`. In Hyprland 0.56.2 this ex
 0.4.6 keeps initial/hover focus suppression but permits pointer input. A compositor-local `window.active` callback restores only the preceding still-mapped, visible window on the same workspace, provided focus has not since changed to another window. Restoration is deferred by one event-loop timer; there is no background daemon or unfocused-context text injection. Interactive AI-result windows do not trigger restoration. The isolated receiver then accepted the exact synthetic commit, and the user confirmed actual cancel/confirm operation and delivery to the original field. Headless tests cover stale/hidden/closed targets, workspace boundaries, later user focus changes and interactive answers.
 
 The compositor behavior is documented by the version-matched [pointer hit-test](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/desktop/state/ViewHitTester.cpp) and [focus state](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/desktop/state/FocusState.cpp) implementations. This corrects the earlier claim that marking Status globally non-focusable preserved all of its intended functionality. It does not establish coverage for other compositors, fullscreen/layer-shell input or every multi-monitor focus scenario.
+
+
+### 7. Empty HUD intercepts clicks and focus restoration warps the cursor
+
+After 0.4.6, the user reported clicks on ordinary web controls pulling the cursor to the screen center while no recording HUD was visible. The mapped Status canvas covered 750×500 logical pixels. The version-matched [focus dispatcher](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/config/shared/actions/ConfigActions.cpp) calls `window->warpCursor()` after focusing the target. This exposed a regression in the community focus callback.
+
+0.4.7 scopes `cursor:no_warps=true` to the synchronous restoration call and restores the preceding value even if dispatch raises an error. It does not permanently change the user's cursor preferences. A fingerprint-guarded runtime change makes an empty/degenerate HUD input region call `setIgnoreMouseEvents(true)` on the supported Wayland path; valid visible controls retain the vendor's clickable path. This does not claim per-pixel click-through for every transparent part of a visible recording canvas.
+
+The headless callback regression fails against 0.4.6 and covers cursor-policy restoration after success/failure. The actual GUI regression additionally compares cursor coordinates and policy before/after the delayed callback and commits a fixed synthetic token only to its isolated receiver. Real pointer acceptance is tracked separately in the validation record. No update policy or new vendor version support is included in this repair.
+
+
+### 8. Local 0.5.0 follow-up
+
+Real pointer acceptance rejected the empty-region mouse-ignore workaround. On the tested native Wayland runtime, an isolated underlying GTK button still missed the click; excluding Status through Hyprland made it work. A visible idle popup also showed that a binary empty/active distinction is insufficient. The guarded runtime now publishes numeric HUD control rectangles through the internal window title. A compositor-local 8 ms check enables pointer input only over these regions and stops when no regions exist. This avoids a separate daemon but has a short boundary race; native input-region support would be preferable upstream.
+
+A real click trace found the initial click-focus event followed by a desktop-state focus event. Cursor preservation therefore captures coordinates at Status activation, before the deferred callback. Headless focus dispatch alone did not reproduce this sequence.
+
+The compatibility-mode updater setup now registers package-managed IPC handlers before the vendor handlers. Background checks remain silent; manual About checks explain the Omarchy/AUR workflow. Download and explicit restart-install requests do not invoke the vendor updater. Shared onboarding version diagnostics receive an explicit managed result without a dialog. The policy does not qualify a new vendor build or provide a new automatic updater service. A pending cached .deb is left intact.
