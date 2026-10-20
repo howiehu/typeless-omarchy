@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.4, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.5, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -33,7 +33,7 @@ Install the official `typeless-bin` separately through Omarchy's AUR installer. 
 Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils` and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.4.4 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.4.5 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package
@@ -48,7 +48,7 @@ Exit Typeless fully, then enable the desktop integration as your regular desktop
 typeless-omarchy-setup
 ```
 
-Setup creates the independent `typeless-omarchy.desktop` menu entry and adds one exact Lua include. The vendor deletes a same-name `typeless.desktop` user override when its system entry exists; the independent entry survives that cleanup. Setup restarts Fcitx to discover the addon, restoring the previously selected engine. Run initial setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
+Setup installs a marked per-user `typeless.desktop` replacement, so the menu has one **Typeless-Omarchy** entry instead of separate official and compatibility entries. The same desktop ID also routes `typeless://` callbacks through the launcher. A fingerprint-guarded change exempts only this marked compatibility entry from the official cleanup; other registration behavior is retained. Setup adds one exact Lua include. Setup restarts Fcitx to discover the addon, restoring the previously selected engine. Run initial setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
 
 Launch **Typeless-Omarchy** from the application menu. Setup repairs recognized existing vendor autostart commands, retaining the enabled/disabled state and original startup arguments. The guarded runtime patch keeps subsequent vendor autostart writes pointed at `/usr/bin/typeless-omarchy` instead of the generated cache executable. Autostart is not enabled if no entry exists; the official startup setting still controls it. Custom commands are left untouched.
 
@@ -58,7 +58,7 @@ After upgrading an existing setup, fully exit Typeless and run:
 typeless-omarchy-setup --repair
 ```
 
-Repair migrates the old same-name menu override and its rollback record without restarting Fcitx. It also adopts an exact matching independent entry from the manual workaround. The vendor uses a single-instance lock, so an already-running instance must be closed for new runtime patches to take effect.
+Repair migrates older setup records without restarting Fcitx and removes the managed 0.4.4 independent duplicate. It preserves the original desktop backup and refuses to overwrite later menu edits. The vendor uses a single-instance lock, so an already-running instance must be closed for new runtime patches to take effect.
 
 ## How the compatibility layer works
 
@@ -93,7 +93,7 @@ typeless-omarchy-setup --remove
 sudo pacman -R typeless-omarchy
 ```
 
-Removal removes the managed independent menu entry, restores the prior v1 desktop entry when applicable, and deletes only the exact config include. It refuses to overwrite later menu edits. Recognized compatibility autostart commands are reverted while preserving later changes to the official startup toggle. User input-method group entries and Typeless account/history data are not removed. Generated runtime cache can be deleted after the app has exited; it lives in the project-specific cache directory described above.
+Removal restores the original per-user desktop entry (or removes our override so the system entry becomes active), removes the managed 0.4.4 duplicate if present, and deletes only the exact config include. It refuses to overwrite later menu edits. Recognized compatibility autostart commands are reverted while preserving later changes to the official startup toggle. User input-method group entries and Typeless account/history data are not removed. Generated runtime cache can be deleted after the app has exited; it lives in the project-specific cache directory described above.
 
 ## Limits
 

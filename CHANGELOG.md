@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.5 — 2026-10-20 — release
+
+- Replace the official desktop ID with one marked per-user compatibility entry instead of leaving two visible menu entries. Official protocol registration now resolves to the same launcher.
+- Guard the exact vendor cleanup branch so it retains only the marked compatibility override; unrelated entries retain their original handling.
+- Migrate the managed 0.4.4 duplicate while preserving original rollback records and later user edits.
+- Retain the 0.4.4 autostart routing and official enabled/disabled setting.
+
+
 ## 0.4.4 — 2026-10-20 — release
 
 - Install an independent `typeless-omarchy.desktop` entry that survives the official app's cleanup of same-name user overrides.

@@ -72,15 +72,18 @@ def repair_autostart(record):
 def install_menu(record, text):
     if desktop.exists() and desktop.read_text() != record.get("menu_installed", text):
         raise SystemExit("Compatibility menu entry changed; reconcile it before repair")
-    # Preserve the v1 backup for removal, but only remove its old override when
-    # it still matches our own content. The vendor may already have deleted it.
-    if "desktop_installed" in record and legacy.exists() and legacy.read_text() == record["desktop_installed"]:
-        legacy.unlink()
-    # Adopt an exact matching entry from a manual workaround as our own.
-    record.setdefault("menu_before", None)
-    record["menu_installed"] = text
-    desktop.parent.mkdir(parents=True, exist_ok=True)
-    desktop.write_text(text)
+    previous_managed = record.get("replacement_installed", record.get("desktop_installed"))
+    if previous_managed and legacy.exists() and legacy.read_text() != previous_managed:
+        raise SystemExit("Legacy desktop entry changed; reconcile it before repair")
+    # Reuse the official desktop ID so menu and typeless:// resolve to one entry.
+    # Retain the original v1 backup instead of backing up our own managed override.
+    record.setdefault("replacement_before", record.get("desktop_before", snapshot(legacy)))
+    record["replacement_installed"] = text.rstrip('\n') + '\nX-Typeless-Omarchy-Managed=true\n'
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    legacy.write_text(record["replacement_installed"])
+    # Remove only the managed 0.4.4/manual duplicate; preserve its rollback record.
+    if desktop.exists():
+        desktop.unlink()
     repair_autostart(record)
 
 
@@ -88,11 +91,14 @@ def remove_integration(record):
     # Check both entries before changing either, preserving subsequent user edits.
     if desktop.exists() and "menu_installed" in record and desktop.read_text() != record["menu_installed"]:
         raise SystemExit("Compatibility menu entry changed since setup; reconcile it before removal")
-    if "desktop_installed" in record and legacy.exists() and legacy.read_text() != record["desktop_installed"]:
+    expected_legacy = record.get("replacement_installed", record.get("desktop_installed"))
+    if expected_legacy and legacy.exists() and legacy.read_text() != expected_legacy:
         raise SystemExit("Legacy desktop entry changed since setup; reconcile it before removal")
     if "menu_installed" in record:
         restore(desktop, record["menu_before"])
-    if "desktop_installed" in record:
+    if "replacement_installed" in record:
+        restore(legacy, record["replacement_before"])
+    elif "desktop_installed" in record:
         restore(legacy, record["desktop_before"])
     # Preserve vendor/user startup toggles even if the vendor rewrote whitespace.
     # Also handle an autostart first created by the vendor after initial setup.

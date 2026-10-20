@@ -25,6 +25,13 @@ AUTOSTART_ROUTER = """const typelessOmarchyAutostartExecutable = executable =>
 """
 AUTOSTART_HOOK = AUTOSTART_ANCHOR.replace(
     "+_0x49b402+", "+typelessOmarchyAutostartExecutable(_0x49b402)+")
+DESKTOP_ANCHOR = '_0x14ba1d[_0x74312e(0xbc8)](_0x5b1f2c),Cu(_0x12df98);'
+DESKTOP_GUARD = r'''const typelessOmarchyManagedDesktop = text =>
+  process.env.TYPELESS_OMARCHY_ACTIVE === '1' &&
+  text.split(/\r?\n/).includes('X-Typeless-Omarchy-Managed=true') &&
+  text.split(/\r?\n/).includes('Exec=/usr/bin/typeless-omarchy %U');
+'''
+DESKTOP_HOOK = 'if(!typelessOmarchyManagedDesktop(_0x12df98)){' + DESKTOP_ANCHOR + '}'
 IPC = "typeless-omarchy:has-input"
 MAIN_HOOK = r'''
 // Independent Typeless-Omarchy compatibility hook: no text or account data.
@@ -122,7 +129,10 @@ def prepare(cache):
     startup = sources[STARTUP].decode()
     if startup.count(AUTOSTART_ANCHOR) != 1:
         raise ValueError('Vendor autostart command builder changed')
-    changed = {MAIN: sources[MAIN] + MAIN_HOOK.encode(),
+    main = sources[MAIN].decode()
+    if main.count(DESKTOP_ANCHOR) != 1:
+        raise ValueError('Vendor desktop cleanup changed')
+    changed = {MAIN: (DESKTOP_GUARD + main.replace(DESKTOP_ANCHOR, DESKTOP_HOOK) + MAIN_HOOK).encode(),
                ENTRY: entry.replace(RESULT_ANCHOR, RESULT_HOOK).encode(),
                STARTUP: (AUTOSTART_ROUTER + startup.replace(AUTOSTART_ANCHOR, AUTOSTART_HOOK)).encode()}
     vendor_stat = (VENDOR / 'typeless').stat()

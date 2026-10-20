@@ -55,7 +55,7 @@ class RuntimeTest(unittest.TestCase):
                 (vendor/'typeless').write_bytes(b'executable fixture')
                 (vendor/'libfixture.so').write_bytes(b'original library')
                 (vendor/'resources/helper').write_bytes(b'helper')
-                files={m.MAIN:b'main fixture;',m.ENTRY:m.RESULT_ANCHOR.encode(),
+                files={m.MAIN:m.DESKTOP_ANCHOR.encode(),m.ENTRY:m.RESULT_ANCHOR.encode(),
                        m.STARTUP:m.AUTOSTART_ANCHOR.encode()}
                 archive(vendor/'resources/app.asar',files)
                 before=(vendor/'resources/app.asar').read_bytes()
@@ -66,6 +66,7 @@ class RuntimeTest(unittest.TestCase):
                 self.assertEqual((binary.parent/'libfixture.so').resolve(),vendor/'libfixture.so')
                 self.assertIn(m.IPC.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.ENTRY))
                 self.assertIn(m.AUTOSTART_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.STARTUP))
+                self.assertIn(m.DESKTOP_HOOK.encode(),m.Archive(binary.parent/'resources/app.asar').read(m.MAIN))
                 self.assertEqual(binary,m.prepare(directory/'cache'))
                 m.EXPECTED[m.ENTRY]='0'*64
                 with self.assertRaisesRegex(ValueError,'Unsupported Typeless'):

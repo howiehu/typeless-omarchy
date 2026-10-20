@@ -1,5 +1,5 @@
 #!/usr/bin/python
-"""Exercise setup/repair/removal on an isolated user profile, without a desktop."""
+"""Exercise single-entry setup/repair/removal on an isolated user profile."""
 import base64
 import importlib.machinery
 import importlib.util
@@ -13,6 +13,7 @@ spec = importlib.util.spec_from_loader(loader.name, loader)
 m = importlib.util.module_from_spec(spec)
 loader.exec_module(m)
 MENU = '[Desktop Entry]\nName=Typeless-Omarchy\nExec=/usr/bin/typeless-omarchy %U\n'
+MANAGED = MENU + 'X-Typeless-Omarchy-Managed=true\n'
 AUTO = ('[Desktop Entry]\nExec=env TYPELESS_SKIP_SECRET_STORE=1 "/opt/Typeless/typeless" '
         '--system-startup-silent-launch --password-store=basic\nHidden=false\n')
 
@@ -27,16 +28,16 @@ class DesktopTest(unittest.TestCase):
         m.desktop.parent.mkdir(parents=True)
         m.autostart.parent.mkdir(parents=True)
 
-    def test_menu_survives_vendor_deleting_legacy_entry(self):
-        m.legacy.write_text('vendor entry')
+    def test_same_desktop_id_replaces_official_without_duplicate(self):
+        m.legacy.write_text('prior user override')
         record = {}
         m.install_menu(record, MENU)
-        m.legacy.unlink()  # The vendor's observed startup cleanup.
-        self.assertEqual(m.desktop.read_text(), MENU)
+        self.assertEqual(m.legacy.read_text(), MANAGED)
+        self.assertFalse(m.desktop.exists())
         m.install_menu(record, MENU)
         m.remove_integration(record)
-        self.assertFalse(m.desktop.exists())
-        self.assertFalse(m.autostart.exists())  # Never enable an absent autostart.
+        self.assertEqual(m.legacy.read_text(), 'prior user override')
+        self.assertFalse(m.autostart.exists())
 
     def test_migrates_v1_and_preserves_original_backup(self):
         original = b'prior user desktop entry'
@@ -44,7 +45,7 @@ class DesktopTest(unittest.TestCase):
                   'desktop_before': base64.b64encode(original).decode()}
         m.legacy.write_text(MENU)
         m.install_menu(record, MENU)
-        self.assertFalse(m.legacy.exists())
+        self.assertEqual(m.legacy.read_text(), MANAGED)
         m.remove_integration(record)
         self.assertEqual(m.legacy.read_bytes(), original)
         self.assertFalse(m.desktop.exists())
@@ -52,8 +53,19 @@ class DesktopTest(unittest.TestCase):
     def test_missing_v1_entry_can_be_repaired(self):
         record = {'desktop_installed': MENU, 'desktop_before': None}
         m.install_menu(record, MENU)
-        self.assertEqual(m.desktop.read_text(), MENU)
+        self.assertEqual(m.legacy.read_text(), MANAGED)
         m.remove_integration(record)
+        self.assertFalse(m.legacy.exists())
+
+    def test_migrates_044_duplicate_and_repeated_repair_removal(self):
+        m.desktop.write_text(MENU)
+        record = {'menu_installed': MENU, 'menu_before': None}
+        m.install_menu(record, MENU)
+        m.install_menu(record, MENU)
+        self.assertFalse(m.desktop.exists())
+        self.assertEqual(m.legacy.read_text(), MANAGED)
+        m.remove_integration(record)
+        self.assertFalse(m.desktop.exists())
         self.assertFalse(m.legacy.exists())
 
     def test_repair_preserves_enabled_and_disabled_autostart(self):
@@ -87,20 +99,21 @@ class DesktopTest(unittest.TestCase):
         m.remove_integration(record)
         self.assertEqual(m.autostart.read_text(), AUTO)
 
-    def test_adopts_matching_manual_menu_without_leaving_it_after_removal(self):
-        m.desktop.write_text(MENU)
+    def test_user_edited_replacement_refuses_removal(self):
         record = {}
         m.install_menu(record, MENU)
-        m.remove_integration(record)
-        self.assertFalse(m.desktop.exists())
-
-    def test_user_edited_menu_refuses_removal_before_changing_files(self):
-        record = {}
-        m.install_menu(record, MENU)
-        m.desktop.write_text('user menu')
+        m.legacy.write_text('user menu')
         with self.assertRaisesRegex(SystemExit, 'changed'):
             m.remove_integration(record)
+        self.assertEqual(m.legacy.read_text(), 'user menu')
+
+    def test_user_edited_duplicate_refuses_repair_before_changing_files(self):
+        record = {'menu_installed': MENU, 'menu_before': None}
+        m.desktop.write_text('user menu')
+        with self.assertRaisesRegex(SystemExit, 'changed'):
+            m.install_menu(record, MENU)
         self.assertEqual(m.desktop.read_text(), 'user menu')
+        self.assertFalse(m.legacy.exists())
 
     def test_user_autostart_command_is_not_overwritten(self):
         custom = AUTO.replace('/opt/Typeless/typeless', '/custom/launcher')
@@ -108,14 +121,13 @@ class DesktopTest(unittest.TestCase):
         m.install_menu({}, MENU)
         self.assertEqual(m.autostart.read_text(), custom)
 
-    def test_user_legacy_entry_is_preserved_during_repair(self):
+    def test_user_legacy_entry_is_preserved_during_migration(self):
         m.legacy.write_text('user legacy edit')
         record = {'desktop_installed': MENU, 'desktop_before': None}
-        m.install_menu(record, MENU)
-        self.assertEqual(m.legacy.read_text(), 'user legacy edit')
         with self.assertRaisesRegex(SystemExit, 'Legacy desktop entry changed'):
-            m.remove_integration(record)
-        self.assertEqual(m.desktop.read_text(), MENU)
+            m.install_menu(record, MENU)
+        self.assertEqual(m.legacy.read_text(), 'user legacy edit')
+        self.assertFalse(m.desktop.exists())
 
 if __name__ == '__main__':
     unittest.main()

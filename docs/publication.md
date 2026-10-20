@@ -20,11 +20,11 @@ I use Typeless 2.2.0 on Omarchy 4.0.5 / Hyprland 0.56.2 with Fcitx5 5.1.23. I ha
 - Rectangular text displacement/flicker while scrolling answer cards; an app-scoped software-rendering comparison resolved it on the test desktop.
 
 Technical report, evidence and limitations:
-https://github.com/howiehu/typeless-omarchy/blob/v0.4.4/docs/upstream-report.md
+https://github.com/howiehu/typeless-omarchy/blob/v0.4.5/docs/upstream-report.md
 
 Source and release:
 https://github.com/howiehu/typeless-omarchy
-https://github.com/howiehu/typeless-omarchy/releases/tag/v0.4.4
+https://github.com/howiehu/typeless-omarchy/releases/tag/v0.4.5
 
 Omarchy packaging contribution:
 https://github.com/omacom/omarchy-pkgs/pull/1294
