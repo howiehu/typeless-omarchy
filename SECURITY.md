@@ -1,6 +1,6 @@
 # Security policy
 
-This pre-release project is maintained on a best-effort basis. The currently tested series is 0.4.x with the exact Typeless 2.2.0 Linux build identified in `runtime/prepare.py`. An unsupported vendor fingerprint disables the answer-card runtime patch; base input compatibility can still run.
+This independent project is maintained on a best-effort basis. The currently tested series is 0.4.x with the exact Typeless 2.2.0 Linux build identified in `runtime/prepare.py`. An unsupported vendor fingerprint disables the answer-card and autostart-generation runtime patches; base input compatibility can still run.
 
 Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/howiehu/typeless-omarchy/security/advisories/new). If the private form is unavailable, open an issue asking for a private contact without disclosing exploit details.
 

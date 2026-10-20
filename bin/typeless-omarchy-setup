@@ -1,9 +1,10 @@
 #!/usr/bin/python
-"""Opt-in desktop integration for the packaged compatibility bridge."""
+"""Opt-in, reversible desktop integration; --repair migrates existing setups."""
 import base64
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
 import sys
 import time
@@ -12,16 +13,105 @@ home = Path.home()
 data = Path(os.environ.get("XDG_DATA_HOME", home / ".local/share"))
 state = Path(os.environ.get("XDG_STATE_HOME", home / ".local/state")) / "typeless-omarchy/package.json"
 config = home / ".config/hypr/hyprland.lua"
-desktop = data / "applications/typeless.desktop"
+desktop = data / "applications/typeless-omarchy.desktop"
+legacy = data / "applications/typeless.desktop"
+autostart = Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / "autostart/typeless.desktop"
 include = '\n-- typeless-omarchy begin\ndofile("/usr/share/typeless-omarchy/typeless.lua")\n-- typeless-omarchy end\n'
 
-def call(method, signature=None, *args):
-    command = ["busctl", "--user", "--json=short", "call", "org.fcitx.Fcitx5",
-               "/controller", "org.fcitx.Fcitx.Controller1", method]
-    if signature:
-        command += [signature, *args]
-    text = subprocess.check_output(command, text=True).strip()
+
+def snapshot(path):
+    return base64.b64encode(path.read_bytes()).decode() if path.exists() else None
+
+
+def restore(path, previous):
+    if previous is None:
+        path.unlink(missing_ok=True)
+    else:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(base64.b64decode(previous))
+
+
+def autostart_command(text):
+    lines = [line for line in text.splitlines() if line.startswith("Exec=")]
+    if len(lines) != 1:
+        return
+    line = lines[0]
+    try:
+        args = shlex.split(line[5:])
+    except ValueError:
+        return
+    prefix = ["env", "TYPELESS_SKIP_SECRET_STORE=1"]
+    if args[:2] != prefix or len(args) != 5 or args[3:] != [
+            "--system-startup-silent-launch", "--password-store=basic"]:
+        return
+    executable = Path(args[2])
+    runtime_root = Path(os.environ.get("XDG_CACHE_HOME", home / ".cache")) / "typeless-omarchy/runtime"
+    if str(executable) not in ("/usr/bin/typeless", "/opt/Typeless/typeless", "/usr/bin/typeless-omarchy") and not (
+            executable.name == "typeless" and executable.parent.parent == runtime_root):
+        return
+    return line, args[2]
+
+
+def repair_autostart(record):
+    # Do not enable autostart or touch unrelated/user-edited commands. The runtime
+    # patch keeps future vendor writes on this same filename and preserves Hidden.
+    if not autostart.exists():
+        return
+    text = autostart.read_text()
+    command = autostart_command(text)
+    if not command:
+        return
+    line, _ = command
+    record.setdefault("autostart_before", snapshot(autostart))
+    fixed = text.replace(line, 'Exec=env TYPELESS_SKIP_SECRET_STORE=1 /usr/bin/typeless-omarchy '
+                         '--system-startup-silent-launch --password-store=basic', 1)
+    record["autostart_installed"] = fixed
+    autostart.write_text(fixed)
+
+
+def install_menu(record, text):
+    if desktop.exists() and desktop.read_text() != record.get("menu_installed", text):
+        raise SystemExit("Compatibility menu entry changed; reconcile it before repair")
+    # Preserve the v1 backup for removal, but only remove its old override when
+    # it still matches our own content. The vendor may already have deleted it.
+    if "desktop_installed" in record and legacy.exists() and legacy.read_text() == record["desktop_installed"]:
+        legacy.unlink()
+    # Adopt an exact matching entry from a manual workaround as our own.
+    record.setdefault("menu_before", None)
+    record["menu_installed"] = text
+    desktop.parent.mkdir(parents=True, exist_ok=True)
+    desktop.write_text(text)
+    repair_autostart(record)
+
+
+def remove_integration(record):
+    # Check both entries before changing either, preserving subsequent user edits.
+    if desktop.exists() and "menu_installed" in record and desktop.read_text() != record["menu_installed"]:
+        raise SystemExit("Compatibility menu entry changed since setup; reconcile it before removal")
+    if "desktop_installed" in record and legacy.exists() and legacy.read_text() != record["desktop_installed"]:
+        raise SystemExit("Legacy desktop entry changed since setup; reconcile it before removal")
+    if "menu_installed" in record:
+        restore(desktop, record["menu_before"])
+    if "desktop_installed" in record:
+        restore(legacy, record["desktop_before"])
+    # Preserve vendor/user startup toggles even if the vendor rewrote whitespace.
+    # Also handle an autostart first created by the vendor after initial setup.
+    if autostart.exists():
+        text = autostart.read_text()
+        command = autostart_command(text)
+        if command and command[1] == "/usr/bin/typeless-omarchy":
+            if text == record.get("autostart_installed"):
+                restore(autostart, record["autostart_before"])
+            else:
+                autostart.write_text(text.replace(command[0], command[0].replace(
+                    "/usr/bin/typeless-omarchy", "/opt/Typeless/typeless", 1), 1))
+
+
+def call(method):
+    text = subprocess.check_output(["busctl", "--user", "--json=short", "call", "org.fcitx.Fcitx5",
+        "/controller", "org.fcitx.Fcitx.Controller1", method], text=True).strip()
     return json.loads(text)["data"] if text else None
+
 
 def restart_input_method(previous):
     subprocess.run(["omarchy", "restart", "xcompose"], check=True)
@@ -32,43 +122,52 @@ def restart_input_method(previous):
     if previous and previous != "typeless-voice":
         subprocess.run(["fcitx5-remote", "-s", previous], check=True)
 
-if "--remove" in sys.argv:
-    record = json.loads(state.read_text())
-    # Refuse to clobber unrelated edits made after setup.
-    if desktop.exists() and desktop.read_text() != record["desktop_installed"]:
-        raise SystemExit("Desktop entry changed since setup; reconcile it before removal")
-    if record["desktop_before"] is None:
-        desktop.unlink(missing_ok=True)
+
+def main():
+    if len(sys.argv) > 2 or (len(sys.argv) == 2 and sys.argv[1] not in ("--remove", "--repair")):
+        raise SystemExit("Usage: typeless-omarchy-setup [--repair|--remove]")
+    remove = "--remove" in sys.argv
+    repair = "--repair" in sys.argv
+    existing = state.exists()
+    if remove or repair:
+        if not existing:
+            raise SystemExit("No compatibility setup exists; run typeless-omarchy-setup first")
+        record = json.loads(state.read_text())
     else:
-        desktop.write_bytes(base64.b64decode(record["desktop_before"]))
-    if config.exists() and include in config.read_text():
-        config.write_text(config.read_text().replace(include, ""))
-    state.unlink()
-    restart_input_method(call("CurrentInputMethod")[0])
-else:
-    if state.exists():
-        raise SystemExit("Compatibility setup already exists")
-    if (state.parent / "install.json").exists():
-        raise SystemExit("Remove the development prototype before packaged setup")
+        if existing:
+            raise SystemExit("Compatibility setup already exists; use --repair to migrate/repair it")
+        if (state.parent / "install.json").exists():
+            raise SystemExit("Remove the development prototype before packaged setup")
+        record = {}
     if not config.exists() or not Path("/usr/lib/fcitx5/typeless-voice.so").exists():
         raise SystemExit("Install the compatibility package in an Omarchy session first")
-    previous = call("CurrentInputMethod")[0]
-    desktop_text = Path("/usr/share/applications/typeless.desktop").read_text().replace(
-        "Exec=/opt/Typeless/typeless", "Exec=/usr/bin/typeless-omarchy").replace(
-        "Name=Typeless\n", "Name=Typeless-Omarchy\n")
-    record = dict(desktop_installed=desktop_text,
-                  desktop_before=base64.b64encode(desktop.read_bytes()).decode() if desktop.exists() else None)
-    state.parent.mkdir(parents=True, exist_ok=True)
-    state.write_text(json.dumps(record))
-    desktop.parent.mkdir(parents=True, exist_ok=True)
-    desktop.write_text(desktop_text)
-    if include not in config.read_text():
-        config.write_text(config.read_text() + include)
-    # Discover the newly installed addon; preserve the existing methods/layout.
-    restart_input_method(previous)
-subprocess.run(["update-desktop-database", str(desktop.parent)], check=True)
-subprocess.run(["hyprctl", "reload"], check=True)
-errors = subprocess.check_output(["hyprctl", "configerrors"], text=True).strip()
-if errors:
-    raise SystemExit(errors)
-print("Typeless-Omarchy disabled" if "--remove" in sys.argv else "Typeless-Omarchy enabled; launch it from the application menu")
+    previous = call("CurrentInputMethod")[0] if not repair else None
+    if remove:
+        remove_integration(record)
+        config.write_text(config.read_text().replace(include, ""))
+        state.unlink()
+    else:
+        text = Path("/usr/share/applications/typeless.desktop").read_text().replace(
+            "Exec=/opt/Typeless/typeless", "Exec=/usr/bin/typeless-omarchy").replace(
+            "Name=Typeless\n", "Name=Typeless-Omarchy\n")
+        if "Exec=/usr/bin/typeless-omarchy" not in text:
+            raise SystemExit("Unsupported vendor desktop entry; compatibility setup was not changed")
+        install_menu(record, text)
+        state.parent.mkdir(parents=True, exist_ok=True)
+        state.write_text(json.dumps(record))
+        if include not in config.read_text():
+            config.write_text(config.read_text() + include)
+    # Repair only launch integration; do not interrupt the working input method.
+    if not repair:
+        restart_input_method(previous)
+    subprocess.run(["update-desktop-database", str(desktop.parent)], check=True)
+    subprocess.run(["systemctl", "--user", "daemon-reload"], check=True)
+    subprocess.run(["hyprctl", "reload"], check=True)
+    errors = subprocess.check_output(["hyprctl", "configerrors"], text=True).strip()
+    if errors:
+        raise SystemExit(errors)
+    print("Typeless-Omarchy disabled" if remove else "Typeless-Omarchy enabled; launch it from the application menu")
+
+
+if __name__ == "__main__":
+    main()

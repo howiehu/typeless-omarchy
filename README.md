@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Pre-release, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.4, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -33,7 +33,7 @@ Install the official `typeless-bin` separately through Omarchy's AUR installer. 
 Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils` and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.4.3 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.4.4 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package
@@ -48,9 +48,17 @@ Exit Typeless fully, then enable the desktop integration as your regular desktop
 typeless-omarchy-setup
 ```
 
-Setup redirects the user's Typeless desktop entry to the compatibility launcher and adds one exact Lua include. It preserves the previous desktop entry and restarts Fcitx to discover the addon, restoring the previously selected engine. Run setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
+Setup creates the independent `typeless-omarchy.desktop` menu entry and adds one exact Lua include. The vendor deletes a same-name `typeless.desktop` user override when its system entry exists; the independent entry survives that cleanup. Setup restarts Fcitx to discover the addon, restoring the previously selected engine. Run initial setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
 
-Launch **Typeless-Omarchy** from the application menu. Existing vendor autostart entries are not rewritten automatically; if using autostart, ensure it invokes `/usr/bin/typeless-omarchy` rather than launching the vendor binary first. The vendor uses a single-instance lock, so a previously running official instance must be closed for the launcher changes to take effect.
+Launch **Typeless-Omarchy** from the application menu. Setup repairs recognized existing vendor autostart commands, retaining the enabled/disabled state and original startup arguments. The guarded runtime patch keeps subsequent vendor autostart writes pointed at `/usr/bin/typeless-omarchy` instead of the generated cache executable. Autostart is not enabled if no entry exists; the official startup setting still controls it. Custom commands are left untouched.
+
+After upgrading an existing setup, fully exit Typeless and run:
+
+```sh
+typeless-omarchy-setup --repair
+```
+
+Repair migrates the old same-name menu override and its rollback record without restarting Fcitx. It also adopts an exact matching independent entry from the manual workaround. The vendor uses a single-instance lock, so an already-running instance must be closed for new runtime patches to take effect.
 
 ## How the compatibility layer works
 
@@ -58,16 +66,18 @@ The vendor expects a `typeless-voice` input endpoint, but the inspected Linux pa
 
 The launcher exposes a private `gdbus` adapter for one exact `CurrentInputMethod` query, only to its recorded parent process and while the bridge socket responds. The virtual endpoint is visible to the vendor helper; the actual selected engine stays unchanged. Unrelated calls execute the system `gdbus`. Global PATH and the Fcitx D-Bus service are not replaced.
 
-Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` verifies two vendor source hashes and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites two files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
+Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` verifies three vendor source hashes and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites three files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
 
-**Installed vendor files are never edited.** The generated runtime contains vendor material for local execution and is not a project release artifact. Unsupported fingerprints emit a warning and use the base input bridge without the answer recovery patch. This project does not read account/history databases to recover answers, replace the speech service, poll the clipboard or enable persistent debugging.
+A separate startup-command transformation changes only the executable written to the vendor autostart entry when compatibility mode is active. The filename, flags and official enabled/disabled handling are preserved.
+
+**Installed vendor files are never edited.** The generated runtime contains vendor material for local execution and is not a project release artifact. Unsupported fingerprints emit a warning and use the base input bridge without the answer-recovery and autostart-generation patches. This project does not read account/history databases to recover answers, replace the speech service, poll the clipboard or enable persistent debugging.
 
 ## Controls and rollback
 
 Exit the existing Typeless instance before testing these commands:
 
 ```sh
-# Use the base input compatibility layer without the private answer-recovery copy.
+# Use the base input compatibility layer without the private answer-recovery/autostart copy.
 TYPELESS_OMARCHY_BASE_ONLY=1 typeless-omarchy
 
 # Restore hardware rendering for comparison.
@@ -83,7 +93,7 @@ typeless-omarchy-setup --remove
 sudo pacman -R typeless-omarchy
 ```
 
-Removal restores the prior desktop entry and deletes only the exact config include. It refuses to overwrite a desktop entry edited after setup. User input-method group entries and Typeless account/history data are not removed. Generated runtime cache can be deleted after the app has exited; it lives in the project-specific cache directory described above.
+Removal removes the managed independent menu entry, restores the prior v1 desktop entry when applicable, and deletes only the exact config include. It refuses to overwrite later menu edits. Recognized compatibility autostart commands are reverted while preserving later changes to the official startup toggle. User input-method group entries and Typeless account/history data are not removed. Generated runtime cache can be deleted after the app has exited; it lives in the project-specific cache directory described above.
 
 ## Limits
 

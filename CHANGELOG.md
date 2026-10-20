@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.4.3 — 2026-10-19 — pre-release
+## 0.4.4 — 2026-10-20 — release
+
+- Install an independent `typeless-omarchy.desktop` entry that survives the official app's cleanup of same-name user overrides.
+- Add `typeless-omarchy-setup --repair` to migrate existing desktop state without restarting Fcitx; preserve rollback records and refuse later menu edits.
+- Keep official autostart generation routed through the compatibility launcher using a third exact-fingerprint runtime transformation; preserve startup arguments and the official enable/disable setting.
+- Repair recognized existing startup commands and preserve user toggles when removing the compatibility integration.
+- Add isolated desktop migration/rollback regressions; retain the existing dictation, answer-card and scrolling behavior.
+
+
+## 0.4.3 — 2026-10-19 — release
 
 - Clarify the copyright attribution as Hao Hu and contributors without changing the MIT license text.
 - Add a shared English/Chinese NOTICE distinguishing original contributions from vendor matching fragments, dependencies and generated runtime material.

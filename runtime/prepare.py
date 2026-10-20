@@ -13,10 +13,18 @@ import tempfile
 VENDOR = Path('/opt/Typeless')
 MAIN = 'dist/main/bootstrapPrimaryInstance-D2WJURak.js'
 ENTRY = 'dist/renderer/static/js/CLnu4epW.mjs'
+STARTUP = 'dist/main/index-Dhin5iqu.js'
 EXPECTED = {
     MAIN: '8d14b7b340113c2bd52943e453bd8c37c3d381c434955765e3d403b66f201c8c',
     ENTRY: '83099ef43191ad8b38d30d6b3f89a43bb78b87ecbe98c1b98db7f6ca1a5c7c62',
+    STARTUP: '1bc651a7f4d003b9edf4057f1575b637b4f6d30f65137877b7d167639d3a3d8c',
 }
+AUTOSTART_ANCHOR = r"pe=_0x49b402=>_0x2ac4ce(0x128)+S+'=1\x20\x22'+_0x49b402+"
+AUTOSTART_ROUTER = """const typelessOmarchyAutostartExecutable = executable =>
+  process.env.TYPELESS_OMARCHY_ACTIVE === '1' ? '/usr/bin/typeless-omarchy' : executable;
+"""
+AUTOSTART_HOOK = AUTOSTART_ANCHOR.replace(
+    "+_0x49b402+", "+typelessOmarchyAutostartExecutable(_0x49b402)+")
 IPC = "typeless-omarchy:has-input"
 MAIN_HOOK = r'''
 // Independent Typeless-Omarchy compatibility hook: no text or account data.
@@ -107,12 +115,16 @@ def prepare(cache):
     sources = {name: archive.read(name) for name in EXPECTED}
     for name, digest in EXPECTED.items():
         if sha(sources[name]) != digest:
-            raise ValueError('Unsupported Typeless build; result compatibility patch was not applied')
+            raise ValueError('Unsupported Typeless build; runtime compatibility patches were not applied')
     entry = sources[ENTRY].decode()
     if entry.count(RESULT_ANCHOR) != 1:
         raise ValueError('Vendor completion handler changed')
+    startup = sources[STARTUP].decode()
+    if startup.count(AUTOSTART_ANCHOR) != 1:
+        raise ValueError('Vendor autostart command builder changed')
     changed = {MAIN: sources[MAIN] + MAIN_HOOK.encode(),
-               ENTRY: entry.replace(RESULT_ANCHOR, RESULT_HOOK).encode()}
+               ENTRY: entry.replace(RESULT_ANCHOR, RESULT_HOOK).encode(),
+               STARTUP: (AUTOSTART_ROUTER + startup.replace(AUTOSTART_ANCHOR, AUTOSTART_HOOK)).encode()}
     vendor_stat = (VENDOR / 'typeless').stat()
     archive_stat = archive.path.stat()
     key = sha(Path(__file__).read_bytes() + str((vendor_stat.st_ino, vendor_stat.st_size, vendor_stat.st_mtime_ns,

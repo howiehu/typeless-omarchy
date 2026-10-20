@@ -20,11 +20,11 @@ I use Typeless 2.2.0 on Omarchy 4.0.5 / Hyprland 0.56.2 with Fcitx5 5.1.23. I ha
 - Rectangular text displacement/flicker while scrolling answer cards; an app-scoped software-rendering comparison resolved it on the test desktop.
 
 Technical report, evidence and limitations:
-https://github.com/howiehu/typeless-omarchy/blob/v0.4.3/docs/upstream-report.md
+https://github.com/howiehu/typeless-omarchy/blob/v0.4.4/docs/upstream-report.md
 
-Source and pre-release:
+Source and release:
 https://github.com/howiehu/typeless-omarchy
-https://github.com/howiehu/typeless-omarchy/releases/tag/v0.4.3
+https://github.com/howiehu/typeless-omarchy/releases/tag/v0.4.4
 
 Omarchy packaging contribution:
 https://github.com/omacom/omarchy-pkgs/pull/1294
@@ -41,6 +41,6 @@ https://github.com/howiehu
 
 Suggested mention: `@typelessdotcom`. Verify the account on X before posting; direct profile verification was unavailable during preparation.
 
-> Built Typeless-Omarchy for Typeless 2.2.0 on Omarchy/Hyprland: Fcitx dictation without IME switching, answer-card recovery, and a scrolling workaround. Pre-release, source + repros: https://github.com/howiehu/typeless-omarchy @typelessdotcom
+> Built Typeless-Omarchy for Typeless 2.2.0 on Omarchy/Hyprland: Fcitx dictation without IME switching, answer-card recovery, and a scrolling workaround. Source + repros: https://github.com/howiehu/typeless-omarchy @typelessdotcom
 
 A follow-up can link the technical report and explain that this is an independent, version-specific compatibility project. Describe the rendering change as a workaround, not an upstream GPU fix. Use synthetic-text footage if adding a demo.

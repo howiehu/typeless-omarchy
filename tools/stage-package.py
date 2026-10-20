@@ -12,7 +12,7 @@ version = re.search(r"project\(typeless-omarchy VERSION ([0-9.]+)", (root / "CMa
 target = Path(sys.argv[1]).resolve()
 target.mkdir(parents=True, exist_ok=True)
 files = ["CMakeLists.txt", "src/voice.cpp", "data/typeless-voice-addon.conf",
-         "runtime/prepare.py", "tests/runtime.py", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
+         "runtime/prepare.py", "tests/runtime.py", "tests/desktop.py", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
          "tests/native-insert.py", "tests/live-input.py", "tools/install-user.py",
          "tools/stage-package.py", "docs/validation.md", "LICENSE", "NOTICE", "README.md"]
@@ -41,7 +41,7 @@ recipe += '''
 prepare() {
   mkdir -p src data bin tests tools docs helpers runtime
   cp prepare.py runtime/
-  cp runtime.py result-routing.cjs tests/
+  cp runtime.py desktop.py result-routing.cjs tests/
   cp voice.cpp src/
   cp typeless-voice-addon.conf typeless.lua data/
   cp gdbus helpers/

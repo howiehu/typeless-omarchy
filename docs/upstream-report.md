@@ -71,3 +71,13 @@ The project offers its original contributions under MIT only to the extent contr
 Headless checks cover protocol validation, socket permissions, caller scoping, archive rewriting/integrity and refusal of unsupported hashes. GUI and human acceptance evidence is listed separately in `docs/validation.md`. One post-restart terminal probe lost input focus; a subsequent cross-workspace run passed. These results do not prove race-free delivery, universal compatibility or crash freedom. The earlier application disappearance had no confirmed root cause.
 
 We would welcome guidance on the preferred engineering contact, supported Linux extension interfaces and how to replace these workarounds with official fixes. The minimal, reproducible cases and independent implementation can be used to guide source-level changes without adopting the compatibility layer's private-runtime mechanism.
+
+## 5. Menu override removed and autostart bypasses compatibility
+
+**Reproduce:** install a per-user `typeless.desktop` override pointing to the compatibility launcher while the official system entry exists, then launch Typeless and inspect the user menu entry and autostart command. Log out/in using that autostart command.
+
+**Observed on 2026-10-20:** the official registration code deletes the same-name user desktop entry when `/usr/share/applications/typeless.desktop` exists. The vendor autostart builder writes the running executable's path, which is the private cache executable in this setup. Both routes then bypass the launcher, losing native-Wayland flags, DISPLAY removal, helper scoping and the rendering workaround. This host's login autostart failed with `X_ChangeProperty / BadWindow`.
+
+**Community workaround (0.4.4):** own a separate `typeless-omarchy.desktop` menu entry. A third fingerprint-guarded transformation changes only the executable passed to the original startup command builder to `/usr/bin/typeless-omarchy` in compatibility mode. The original startup filename, arguments and enable/disable logic remain. The setup repair command migrates legacy records and fixes recognized existing startup commands without restarting Fcitx. No watcher, extra tray or persistent service is installed.
+
+**Suggested upstream direction:** preserve explicitly customized desktop entries and support a stable user-configurable launcher for menu/protocol/autostart integration instead of serializing a temporary runtime path.
