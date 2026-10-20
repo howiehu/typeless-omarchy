@@ -12,8 +12,9 @@ loader = importlib.machinery.SourceFileLoader('setup_integration', str(root/'bin
 spec = importlib.util.spec_from_loader(loader.name, loader)
 m = importlib.util.module_from_spec(spec)
 loader.exec_module(m)
-MENU = '[Desktop Entry]\nName=Typeless-Omarchy\nExec=/usr/bin/typeless-omarchy %U\n'
+MENU = '[Desktop Entry]\nName=Typeless\nExec=/usr/bin/typeless-omarchy %U\n'
 MANAGED = MENU + 'X-Typeless-Omarchy-Managed=true\n'
+OLD_MENU = MENU.replace('Name=Typeless\n', 'Name=Typeless-Omarchy\n')
 AUTO = ('[Desktop Entry]\nExec=env TYPELESS_SKIP_SECRET_STORE=1 "/opt/Typeless/typeless" '
         '--system-startup-silent-launch --password-store=basic\nHidden=false\n')
 
@@ -41,9 +42,9 @@ class DesktopTest(unittest.TestCase):
 
     def test_migrates_v1_and_preserves_original_backup(self):
         original = b'prior user desktop entry'
-        record = {'desktop_installed': MENU,
+        record = {'desktop_installed': OLD_MENU,
                   'desktop_before': base64.b64encode(original).decode()}
-        m.legacy.write_text(MENU)
+        m.legacy.write_text(OLD_MENU)
         m.install_menu(record, MENU)
         self.assertEqual(m.legacy.read_text(), MANAGED)
         m.remove_integration(record)
@@ -58,8 +59,8 @@ class DesktopTest(unittest.TestCase):
         self.assertFalse(m.legacy.exists())
 
     def test_migrates_044_duplicate_and_repeated_repair_removal(self):
-        m.desktop.write_text(MENU)
-        record = {'menu_installed': MENU, 'menu_before': None}
+        m.desktop.write_text(OLD_MENU)
+        record = {'menu_installed': OLD_MENU, 'menu_before': None}
         m.install_menu(record, MENU)
         m.install_menu(record, MENU)
         self.assertFalse(m.desktop.exists())

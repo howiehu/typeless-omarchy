@@ -154,8 +154,7 @@ def main():
         state.unlink()
     else:
         text = Path("/usr/share/applications/typeless.desktop").read_text().replace(
-            "Exec=/opt/Typeless/typeless", "Exec=/usr/bin/typeless-omarchy").replace(
-            "Name=Typeless\n", "Name=Typeless-Omarchy\n")
+            "Exec=/opt/Typeless/typeless", "Exec=/usr/bin/typeless-omarchy")
         if "Exec=/usr/bin/typeless-omarchy" not in text:
             raise SystemExit("Unsupported vendor desktop entry; compatibility setup was not changed")
         install_menu(record, text)
@@ -172,7 +171,7 @@ def main():
     errors = subprocess.check_output(["hyprctl", "configerrors"], text=True).strip()
     if errors:
         raise SystemExit(errors)
-    print("Typeless-Omarchy disabled" if remove else "Typeless-Omarchy enabled; launch it from the application menu")
+    print("Typeless-Omarchy disabled" if remove else "Typeless-Omarchy enabled; launch Typeless from the application menu")
 
 
 if __name__ == "__main__":

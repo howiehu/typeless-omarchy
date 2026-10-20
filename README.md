@@ -48,9 +48,9 @@ Exit Typeless fully, then enable the desktop integration as your regular desktop
 typeless-omarchy-setup
 ```
 
-Setup installs a marked per-user `typeless.desktop` replacement, so the menu has one **Typeless-Omarchy** entry instead of separate official and compatibility entries. The same desktop ID also routes `typeless://` callbacks through the launcher. A fingerprint-guarded change exempts only this marked compatibility entry from the official cleanup; other registration behavior is retained. Setup adds one exact Lua include. Setup restarts Fcitx to discover the addon, restoring the previously selected engine. Run initial setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
+Setup installs a marked per-user `typeless.desktop` replacement, so the menu has one **Typeless** entry instead of separate official and compatibility entries. The same desktop ID also routes `typeless://` callbacks through the launcher. A fingerprint-guarded change exempts only this marked compatibility entry from the official cleanup; other registration behavior is retained. Setup adds one exact Lua include. Setup restarts Fcitx to discover the addon, restoring the previously selected engine. Run initial setup at a convenient time because that restart briefly interrupts input. No package install hook modifies user profiles.
 
-Launch **Typeless-Omarchy** from the application menu. Setup repairs recognized existing vendor autostart commands, retaining the enabled/disabled state and original startup arguments. The guarded runtime patch keeps subsequent vendor autostart writes pointed at `/usr/bin/typeless-omarchy` instead of the generated cache executable. Autostart is not enabled if no entry exists; the official startup setting still controls it. Custom commands are left untouched.
+Launch **Typeless** from the application menu. Setup repairs recognized existing vendor autostart commands, retaining the enabled/disabled state and original startup arguments. The guarded runtime patch keeps subsequent vendor autostart writes pointed at `/usr/bin/typeless-omarchy` instead of the generated cache executable. Autostart is not enabled if no entry exists; the official startup setting still controls it. Custom commands are left untouched.
 
 After upgrading an existing setup, fully exit Typeless and run:
 
