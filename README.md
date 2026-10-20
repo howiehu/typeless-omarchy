@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.5, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.4.6, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -13,10 +13,12 @@ Independent compatibility tools for the official Typeless Linux app on Omarchy, 
 | --- | --- |
 | Dictation | A passive Fcitx module commits to the focused input context without switching the selected Chinese/keyboard engine. |
 | Launch | Runs Typeless on native Wayland and scopes the helper query adapter to Typeless's own process. |
-| Recording HUD | Removes compositor decorations from the transparent `Status` canvas and keeps it visible across workspaces without taking focus. |
+| Recording HUD | Removes compositor decorations and keeps the `Status` canvas visible across workspaces. Cancel/confirm remain clickable; keyboard focus returns to the preceding live window on the same workspace. |
 | Answers | Keeps official `AI result` cards interactive and visible across workspaces. |
 | Ask Anything recovery | The selected-text replace path opens the official answer card when no eligible Fcitx input context exists, instead of attempting a paste with no reliable target. |
 | Scrolling | Defaults only Typeless to software rendering; this resolved the rectangular text flicker/displacement confirmed on the test desktop. |
+
+The Status rule prevents initial/hover focus but allows pointer interaction. A compositor-local event callback restores keyboard focus after a Status click, only while the preceding window remains visible on the same workspace and the user has not focused something else. It does not commit into an unfocused input context. Interactive answer cards retain their normal focus behavior.
 
 The official dashboard, tray, login, onboarding and account profile remain in use. No extra tray icon or persistent service is installed. The compatibility package does not contain the proprietary app, account data or generated runtime copies.
 
@@ -30,10 +32,10 @@ Other application versions, desktops, architectures and GPUs have not been estab
 
 Install the official `typeless-bin` separately through Omarchy's AUR installer. Review that recipe and the vendor's download source as you normally would for an AUR application.
 
-Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils` and `git`. Then, as your regular desktop user:
+Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils`, `lua` (tests) and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.4.5 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.4.6 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package

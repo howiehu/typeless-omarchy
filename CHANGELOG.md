@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.6 — 2026-10-20 — release
+
+- Fix recording HUD cancel/confirm buttons being excluded from Hyprland pointer hit-testing by `no_focus`. Keep initial/hover focus suppression.
+- Restore keyboard focus from Status to the preceding live, visible window on the same workspace, so clicking confirm retains the original Fcitx input target. Respect subsequent focus changes and keep AI-result cards interactive.
+- Add eleven headless focus-safety cases and a dedicated isolated GTK focus/commit GUI regression. Real cancel/confirm behavior was user-confirmed.
+
+
 ## 0.4.5 — 2026-10-20 — release
 
 - Replace the official desktop ID with one marked per-user compatibility entry named Typeless instead of leaving two visible menu entries. The project/package remains Typeless-Omarchy. Official protocol registration now resolves to the same launcher.

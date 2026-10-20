@@ -12,9 +12,9 @@ version = re.search(r"project\(typeless-omarchy VERSION ([0-9.]+)", (root / "CMa
 target = Path(sys.argv[1]).resolve()
 target.mkdir(parents=True, exist_ok=True)
 files = ["CMakeLists.txt", "src/voice.cpp", "data/typeless-voice-addon.conf",
-         "runtime/prepare.py", "tests/runtime.py", "tests/desktop.py", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
+         "runtime/prepare.py", "tests/runtime.py", "tests/desktop.py", "tests/status-focus.lua", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
-         "tests/native-insert.py", "tests/live-input.py", "tools/install-user.py",
+         "tests/native-insert.py", "tests/live-input.py", "tests/hud-focus.py", "tools/install-user.py",
          "tools/stage-package.py", "docs/validation.md", "LICENSE", "NOTICE", "README.md"]
 for name in files:
     shutil.copy2(root / name, target / Path(name).name)
@@ -30,7 +30,7 @@ url='https://github.com/howiehu/typeless-omarchy'
 license=('MIT')
 depends=('fcitx5' 'json-c' 'glib2' 'python' 'systemd' 'desktop-file-utils')
 makedepends=('cmake' 'gcc' 'pkgconf')
-checkdepends=('dbus')
+checkdepends=('dbus' 'lua')
 optdepends=('typeless-bin: official Typeless application (AUR)'
             'omarchy: opt-in desktop integration')
 options=('!debug')
@@ -41,12 +41,12 @@ recipe += '''
 prepare() {
   mkdir -p src data bin tests tools docs helpers runtime
   cp prepare.py runtime/
-  cp runtime.py desktop.py result-routing.cjs tests/
+  cp runtime.py desktop.py status-focus.lua result-routing.cjs tests/
   cp voice.cpp src/
   cp typeless-voice-addon.conf typeless.lua data/
   cp gdbus helpers/
   cp typeless-omarchy typeless-omarchy-setup bin/
-  cp protocol.py input-probe.py native-insert.py live-input.py tests/
+  cp protocol.py input-probe.py native-insert.py live-input.py hud-focus.py tests/
   cp install-user.py stage-package.py tools/
   cp validation.md docs/
 }

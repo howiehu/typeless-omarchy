@@ -34,7 +34,7 @@ The first prototype registered a selectable `typeless-voice` input method. A new
 
 Final 0.2 verification passed GTK and cross-workspace Foot tests with `--preserve-im --shuangpin`, plus `--interleave` for actual manual Chinese before/after the voice commit. The user confirmed real mixed Shuangpin/voice use and an English-mode switch while retaining the selected method. System `fcitx5-remote -n` reported `shuangpin` while Typeless was running; its private query saw the virtual endpoint and performed no real engine capture or switch.
 
-The `Status` recording canvas persists after an application restart and is transparent while idle. With no workaround Hyprland draws a visible empty frame. The final rule removes decorations, blur and focus only for class `Typeless`, title `Status`; verified border_size=0 and no_focus=true plus local visual inspection. Only the recording canvas is pinned across workspaces. No dashboard rule, extra tray icon or visibility service is installed.
+The `Status` recording canvas persists after an application restart and is transparent while idle. With no workaround Hyprland draws a visible empty frame. The final rule removes decorations, blur and focus only for class `Typeless`, title `Status`; verified border_size=0 and no_focus=true plus local visual inspection (the historical no_focus rule is superseded by 0.4.6 below). Only the recording canvas is pinned across workspaces. No dashboard rule, extra tray icon or visibility service is installed.
 
 Version 0.4 result validation:
 
@@ -67,3 +67,13 @@ Release 0.4.5 single-entry validation (2026-10-20):
 - Cold startup using `gtk-launch typeless.desktop` mapped the dashboard, retained the marked replacement and generated the correct autostart command. Executing that exact autostart command and then reopening from the same menu ID passed again; Gio still reported one visible entry.
 - `gio mime` reported `typeless.desktop` as the only registered/recommended/default protocol handler. Gio resolved its command to the compatibility launcher. No authentication token was used and a fresh login/account setup was not exercised.
 - The desktop integration suite now has eleven cases, including migration of v1/0.4.4 records, repeat repair/removal, one-ID replacement, user edits and autostart preservation. All three CTests and the generated Arch package build passed. The installed official package still reported 361 files and zero altered files; Hyprland configuration had no errors. A full reboot was not performed.
+
+
+Release 0.4.6 recording-control validation (2026-10-20):
+
+- User reproduced non-clickable cancel/confirm controls. The installed Status rule had `no_focus=true`; Hyprland 0.56.2 pointer hit-testing explicitly skips such windows.
+- Removing that exclusion and suppressing hover/initial focus made controls clickable, but the user reported confirmation text missing from the original field. The active window was Status and the native logs showed Fcitx focus timeouts followed by clipboard fallback.
+- An isolated GTK reproduction created its own input receiver, transferred focus to the existing Status window and attempted one fixed synthetic commit. Before restoration it failed with `NO_FOCUS`; with the compositor event callback the same probe restored the receiver and committed the exact expected text. Reusable command: `python tests/hud-focus.py` with Typeless already running. This simulates the focus transition; it is not an automated mouse/speech test.
+- The user then confirmed both actual mouse cancel and mouse confirm work, including text delivery to the original input field. The temporary rule/handler was used for acceptance; final deployment uses the packaged Lua include.
+- Eleven headless cases exercise the actual Lua callbacks, including no original target, expired objects, hidden/unmapped/invisible targets, workspace mismatch, subsequent user focus changes and unaffected AI-result focus. These are separate from the real pointer/speech acceptance above.
+- No native input bridge, vendor runtime transformation, updater behavior or official account/onboarding code was changed. The separate update-policy research remains a recommendation, not an implemented update change.

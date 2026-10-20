@@ -32,7 +32,7 @@ Omarchy packaging PR: https://github.com/omacom/omarchy-pkgs/pull/1294
 
 **Observed:** the idle transparent `Status` canvas was presented with an empty rectangular frame; official overlay intent did not map fully to compositor behavior across workspaces. Native-Wayland execution also required avoiding an X11 helper path that emitted `BadWindow` errors.
 
-**Community workaround:** launch with native Wayland while removing `DISPLAY` only from the app process. Narrow class/title rules remove border, shadow, blur and focus from the recording HUD, keep it floating/pinned, and preserve the official interactive `AI result` card's focus. No dashboard, tray, login or onboarding controller is added.
+**Community workaround:** launch with native Wayland while removing `DISPLAY` only from the app process. Narrow class/title rules remove border, shadow and blur from the recording HUD and keep it floating/pinned. Version 0.4.6 permits its cancel/confirm pointer input while suppressing initial/hover focus and restoring the preceding keyboard target; see section 6. The official interactive `AI result` card retains its focus behavior. No dashboard, tray, login or onboarding controller is added.
 
 **Important correction:** native constructors share a translated title key, but a real mapped answer card uses the title `AI result`. The earlier suspicion that a `Status`-only no-focus rule explained the missing answer was not established. Actual window observation distinguished the roles.
 
@@ -84,3 +84,12 @@ We would welcome guidance on the preferred engineering contact, supported Linux 
 
 
 **0.4.5 refinement:** the menu now uses a marked same-ID `typeless.desktop` replacement, eliminating the separate official/compatibility choices. Its display name stays Typeless; the independently maintained project/package remains Typeless-Omarchy. The existing exact-fingerprint main-module transformation exempts only an entry containing the project marker and exact compatibility Exec line from vendor cleanup. Official protocol registration continues and resolves to that same replacement. Repair removes the managed 0.4.4 independent entry and retains the original pre-integration backup; uninstall restores the previous entry. No global filesystem interception, watcher, package-owned desktop edit or application-process blocking is used.
+
+
+## 6. Recording HUD cancel/confirm loses pointer or input target
+
+The prior community Status rule used `no_focus=true`. In Hyprland 0.56.2 this excludes the window from pointer hit-testing, preventing the official cancel/confirm controls from receiving clicks. Allowing focus made both buttons clickable, but clicking confirm moved keyboard focus into Status; the native insertion path then timed out waiting for Fcitx focus and the original input did not receive text. This was confirmed by the user and reproduced with an isolated GTK receiver (`NO_FOCUS`).
+
+0.4.6 keeps initial/hover focus suppression but permits pointer input. A compositor-local `window.active` callback restores only the preceding still-mapped, visible window on the same workspace, provided focus has not since changed to another window. Restoration is deferred by one event-loop timer; there is no background daemon or unfocused-context text injection. Interactive AI-result windows do not trigger restoration. The isolated receiver then accepted the exact synthetic commit, and the user confirmed actual cancel/confirm operation and delivery to the original field. Headless tests cover stale/hidden/closed targets, workspace boundaries, later user focus changes and interactive answers.
+
+The compositor behavior is documented by the version-matched [pointer hit-test](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/desktop/state/ViewHitTester.cpp) and [focus state](https://github.com/hyprwm/Hyprland/blob/v0.56.2/src/desktop/state/FocusState.cpp) implementations. This corrects the earlier claim that marking Status globally non-focusable preserved all of its intended functionality. It does not establish coverage for other compositors, fullscreen/layer-shell input or every multi-monitor focus scenario.

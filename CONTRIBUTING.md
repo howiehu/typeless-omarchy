@@ -4,7 +4,7 @@ This is an independent compatibility project. Keep contributions focused on inpu
 
 ## Development
 
-Use Arch Linux with `base-devel`, CMake, Fcitx5 development files, json-c, GLib, Python and dbus. From a clean checkout:
+Use Arch Linux with `base-devel`, CMake, Fcitx5 development files, json-c, GLib, Python, Lua (headless focus tests) and dbus. From a clean checkout:
 
 ```sh
 cmake -S . -B build-ci -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
