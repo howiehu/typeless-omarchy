@@ -1,6 +1,7 @@
 #!/usr/bin/python
 """Build a private, version-checked runtime overlay; never edit vendor files."""
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -62,7 +63,7 @@ const typelessOmarchyShowUpdatePolicy = () => {
   const zh = _0x375e04.getLocale().startsWith('zh');
   return _0x47aeda.showMessageBox({type:'info',title:'Typeless',buttons:[zh?'确定':'OK'],
     message:zh?'Typeless 通过包管理器更新':'Typeless updates are managed through packages',
-    detail:zh?'请通过 Omarchy 的 AUR 更新流程更新 typeless-bin，并安装与之匹配的 Typeless-Omarchy。当前兼容层已验证官方 2.2.0 构建；新构建需先完成适配验证。':'Update typeless-bin through the Omarchy AUR workflow and use a matching Typeless-Omarchy release. This compatibility layer validates the official 2.2.0 build; new builds require compatibility validation.'});
+    detail:zh?'请通过 Omarchy 的 AUR 更新流程更新 typeless-bin，并安装与之匹配的 Typeless-Omarchy。当前兼容层已验证官方 2.2.0 和 2.2.1 的指定构建；新构建需先完成适配验证。':'Update typeless-bin through the Omarchy AUR workflow and use a matching Typeless-Omarchy release. This compatibility layer validates the qualified official 2.2.0 and 2.2.1 builds; new builds require compatibility validation.'});
 };
 '''
 UPDATER_HOOK = UPDATER_ANCHOR + """if(typelessOmarchyConfigureUpdates({
@@ -158,8 +159,7 @@ class Archive:
                     target.write(chunk)
                     remaining -= len(chunk)
 
-def prepare(cache):
-    archive = Archive(VENDOR / 'resources/app.asar')
+def patch_220(archive):
     sources = {name: archive.read(name) for name in EXPECTED}
     for name, digest in EXPECTED.items():
         if sha(sources[name]) != digest:
@@ -184,9 +184,34 @@ def prepare(cache):
     changed = {SETTINGS: settings.replace(SETTINGS_ANCHOR, SETTINGS_HOOK).encode(), MAIN: (DESKTOP_GUARD + HUD_STATE + UPDATER_POLICY + main.replace(DESKTOP_ANCHOR, DESKTOP_HOOK) + MAIN_HOOK).encode(),
                ENTRY: entry.replace(RESULT_ANCHOR, RESULT_HOOK).encode(),
                STARTUP: (AUTOSTART_ROUTER + startup.replace(AUTOSTART_ANCHOR, AUTOSTART_HOOK)).encode()}
+    return changed
+
+def build221_profile():
+    spec = importlib.util.spec_from_file_location('typeless_build221', Path(__file__).with_name('build221.py'))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def patch_sources(archive):
+    names = dict(archive.entries())
+    try:
+        if MAIN in names:
+            return patch_220(archive)
+        profile = build221_profile()
+        if profile.MAIN in names:
+            return profile.patch(archive, globals())
+    except KeyError as error:
+        raise ValueError('Unsupported Typeless build; required module missing: ' + str(error)) from error
+    raise ValueError('Unsupported Typeless build; no qualified 2.2.0/2.2.1 profile matches')
+
+
+def prepare(cache):
+    archive = Archive(VENDOR / 'resources/app.asar')
+    changed = patch_sources(archive)
     vendor_stat = (VENDOR / 'typeless').stat()
     archive_stat = archive.path.stat()
-    key = sha(Path(__file__).read_bytes() + str((vendor_stat.st_ino, vendor_stat.st_size, vendor_stat.st_mtime_ns,
+    key = sha(Path(__file__).read_bytes() + Path(__file__).with_name('build221.py').read_bytes() + str((vendor_stat.st_ino, vendor_stat.st_size, vendor_stat.st_mtime_ns,
               archive_stat.st_ino,archive_stat.st_size,archive_stat.st_mtime_ns)).encode())[:24]
     cache.mkdir(parents=True, exist_ok=True, mode=0o700)
     final = cache / key
@@ -206,7 +231,7 @@ def prepare(cache):
         for child in (VENDOR / 'resources').iterdir():
             if child.name != 'app.asar': (resources / child.name).symlink_to(child)
         archive.write(resources / 'app.asar', changed)
-        (stage / 'ready').write_text('Typeless 2.2.0; local compatibility overlay\n')
+        (stage / 'ready').write_text('Typeless qualified build; local compatibility overlay\n')
         try:
             stage.rename(final)
         except OSError:

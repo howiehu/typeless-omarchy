@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.5.0, x86_64; tested with Typeless 2.2.0.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **0.5.1 qualification build (not released), x86_64; tested with Typeless 2.2.1; 2.2.0 patch profile retained.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -25,9 +25,9 @@ The official dashboard, tray, login, onboarding and account profile remain in us
 
 ## Tested environment
 
-Omarchy 4.0.5, Hyprland 0.56.2, Fcitx5 5.1.23, official Typeless 2.2.0 (`typeless-bin 2.2.0-1`), x86_64. The user confirmed mixed Shuangpin/voice input, answer-card recovery and normal scrolling with the rendering workaround. Automated coverage and limits are in [validation](docs/validation.md).
+Omarchy 4.0.6, Hyprland 0.56.2, Fcitx5 5.1.23, official Typeless 2.2.1 (`typeless-bin 2.2.1-1`), x86_64. The user confirmed mixed Shuangpin/voice input, answer-card recovery and normal scrolling with the rendering workaround. Automated coverage and limits are in [validation](docs/validation.md).
 
-Other application versions, desktops, architectures and GPUs have not been established as supported. In particular, the answer recovery patch accepts only the exact vendor code fingerprints recorded in `runtime/prepare.py`.
+Other application versions, desktops, architectures and GPUs have not been established as supported. In particular, the answer recovery patch accepts only the exact vendor code fingerprints recorded in `runtime/prepare.py` and `runtime/build221.py`.
 
 ## Install on Omarchy
 
@@ -69,7 +69,7 @@ The vendor expects a `typeless-voice` input endpoint, but the inspected Linux pa
 
 The launcher exposes a private `gdbus` adapter for one exact `CurrentInputMethod` query, only to its recorded parent process and while the bridge socket responds. The virtual endpoint is visible to the vendor helper; the actual selected engine stays unchanged. Unrelated calls execute the system `gdbus`. Global PATH and the Fcitx D-Bus service are not replaced.
 
-Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` verifies four vendor source hashes and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites four files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
+Answer recovery needs a small application-side change. At launch, `runtime/prepare.py` selects an exact-fingerprint vendor profile (four modules for 2.2.0, three for 2.2.1) and builds a private runtime copy under `${XDG_CACHE_HOME:-~/.cache}/typeless-omarchy/runtime/`. It copies the executable, links unchanged resources, and rewrites only that profile's files in a private ASAR archive with updated integrity metadata. A private main-process status request checks the bridge before the Ask Anything replace handler inserts. No eligible context means showing the original answer card; a focused editable context preserves the vendor handler.
 
 A separate startup-command transformation changes only the executable written to the vendor autostart entry when compatibility mode is active. The filename, flags and official enabled/disabled handling are preserved.
 
@@ -127,3 +127,12 @@ Copyright (c) 2026 Hao Hu and contributors. The MIT license in [LICENSE](LICENSE
 The private-runtime patch uses vendor-specific identifiers and small matching fragments; no ownership or MIT relicensing of third-party material is claimed. Installed vendor files are unchanged, but the generated runtime contains modified vendor material. Local generation, source fingerprint checks and non-distribution do not establish vendor authorization or legal compliance. Typeless's [Terms of Service](https://www.typeless.com/terms), including sections 3 and 7, contain restrictions relevant to reverse engineering and modification. No applicable exception, permission or legal-clearance determination is represented here.
 
 This project is not affiliated with or endorsed by Typeless or Omarchy. Their names identify compatibility targets; no trademark rights or official support are granted by this project. These notices clarify scope and do not replace a legal review.
+
+
+## Vendor upgrades and automation
+
+2.2.1 moved the main/autostart code into `dist/main/index.js` and changed renderer bundles. It also added direct GIO/D-Bus Fcitx queries. The launcher scopes `libtypeless-query.so` through `LD_PRELOAD` to Typeless and its children; only the main launch PID's exact Fcitx CurrentInputMethod query is adapted, and only while the passive bridge answers. Other methods/processes, canceled calls, and missing/invalid bridge replies use the real GIO function. The existing command adapter remains for the 2.2.0 path. No global environment or D-Bus service is replaced.
+
+Run `python tools/check-vendor.py --archive /opt/Typeless/resources/app.asar` for a read-only, in-memory fingerprint/anchor check without generating a runtime. The official Linux release page currently contains no detailed 2.2.1 entry; this is not evidence of unchanged behavior. See [the 2.2.1 audit](docs/typeless-2.2.1.md).
+
+The official-version watcher runs every six hours and can be dispatched manually. It reads only the small official release metadata, fails visibly for an unqualified version, and does not accept fingerprints, download an app, edit code, publish a release or install anything. It detects version changes, not same-version vendor rebuilds; archive checks remain required for qualification. Source/recipe CI builds on project pushes/tags. The Omarchy contribution watches this project's qualified formal releases; that downstream route requires the package PR to be accepted and its scheduled workflows to run. The vendor binary and compatibility package remain separately managed.

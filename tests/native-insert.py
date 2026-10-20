@@ -13,6 +13,7 @@ os.environ["PATH"] = str(Path(__file__).resolve().parent.parent / "helpers") + "
 def current():
     return subprocess.check_output(["/usr/bin/fcitx5-remote", "-n"], text=True).strip()
 
+ctypes.CDLL("libgio-2.0.so.0", mode=ctypes.RTLD_GLOBAL)
 helper = ctypes.CDLL("/opt/Typeless/resources/lib/input-helper/build/linux/x64/libInputHelper.so")
 helper.insertText.argtypes = [ctypes.c_char_p]
 helper.insertText.restype = None

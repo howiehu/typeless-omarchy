@@ -71,8 +71,11 @@ with tempfile.TemporaryDirectory(prefix="typeless-probe-") as directory:
                 raise SystemExit(0)
             finally:
                 subprocess.run(["fcitx5-remote", "-s", previous], check=True)
+        native_env = {k:v for k,v in env.items() if k != "DISPLAY"}
+        if env.get("TYPELESS_TEST_QUERY_LIBRARY"):
+            native_env["LD_PRELOAD"] = env["TYPELESS_TEST_QUERY_LIBRARY"] + (":" + env["LD_PRELOAD"] if env.get("LD_PRELOAD") else "")
         result = subprocess.run(["python", str(here / "native-insert.py"), token + ("\n" if terminal else "")],
-                                env={k:v for k,v in env.items() if k != "DISPLAY"},
+                                env=native_env,
                                 capture_output=True, text=True, timeout=8)
         for _ in range(20):
             if output.exists() and output.read_text() == prefix + token:

@@ -1,0 +1,19 @@
+name: Watch official Typeless releases
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qualified-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Read official Linux release metadata
+        run: curl --fail --silent --show-error --max-time 30 --max-filesize 131072 https://typeless-static.com/desktop-release/latest-linux.yml -o "$RUNNER_TEMP/latest-linux.yml"
+      - name: Require an explicitly qualified version
+        run: python3 tools/check-vendor.py --feed "$RUNNER_TEMP/latest-linux.yml"

@@ -11,14 +11,14 @@ root = Path(__file__).resolve().parent.parent
 version = re.search(r"project\(typeless-omarchy VERSION ([0-9.]+)", (root / "CMakeLists.txt").read_text()).group(1)
 target = Path(sys.argv[1]).resolve()
 target.mkdir(parents=True, exist_ok=True)
-files = ["CMakeLists.txt", "src/voice.cpp", "data/typeless-voice-addon.conf",
-         "runtime/prepare.py", "runtime/update-policy.mjs", "tests/update-policy-test.mjs", "tests/runtime.py", "tests/desktop.py", "tests/status-focus.lua", "tests/hud-pointer.cjs", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
+files = ["CMakeLists.txt", "src/voice.cpp", "src/query.cpp", "tests/query.py", "tests/query-backend.cpp", "data/typeless-voice-addon.conf",
+         "runtime/prepare.py", "runtime/build221.py", "tests/build221.py", "tests/vendor-feed.py", "tools/check-vendor.py", "runtime/update-policy.mjs", "tests/update-policy-test.mjs", "tests/runtime.py", "tests/desktop.py", "tests/status-focus.lua", "tests/hud-pointer.cjs", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
          "tests/native-insert.py", "tests/live-input.py", "tests/hud-focus.py", "tests/pointer-click.py", "tools/install-user.py",
-         "tools/stage-package.py", "docs/validation.md", "LICENSE", "NOTICE", "README.md"]
+         "tools/stage-package.py", "docs/validation.md", "docs/typeless-2.2.1.md", "LICENSE", "NOTICE", "README.md"]
 for name in files:
-    shutil.copy2(root / name, target / Path(name).name)
-names = [Path(name).name for name in files]
+    shutil.copy2(root / name, target / ("build221-test.py" if name == "tests/build221.py" else Path(name).name))
+names = ["build221-test.py" if name == "tests/build221.py" else Path(name).name for name in files]
 checksums = [hashlib.sha256((target / name).read_bytes()).hexdigest() for name in names]
 recipe = '''# Package-local compatibility sources; no vendor binary redistribution.
 pkgname=typeless-omarchy
@@ -41,15 +41,21 @@ recipe += '''
 prepare() {
   mkdir -p src data bin tests tools docs helpers runtime
   cp prepare.py update-policy.mjs runtime/
+  cp build221.py runtime/
+  cp build221-test.py tests/build221.py
+  cp vendor-feed.py tests/
+  cp check-vendor.py tools/
   cp update-policy-test.mjs tests/
   cp runtime.py desktop.py status-focus.lua hud-pointer.cjs result-routing.cjs tests/
   cp voice.cpp src/
+  cp query.cpp src/
+  cp query.py query-backend.cpp tests/
   cp typeless-voice-addon.conf typeless.lua data/
   cp gdbus helpers/
   cp typeless-omarchy typeless-omarchy-setup bin/
   cp protocol.py input-probe.py native-insert.py live-input.py hud-focus.py pointer-click.py tests/
   cp install-user.py stage-package.py tools/
-  cp validation.md docs/
+  cp validation.md typeless-2.2.1.md docs/
 }
 
 build() {

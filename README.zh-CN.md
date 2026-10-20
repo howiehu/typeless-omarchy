@@ -1,6 +1,6 @@
 # Typeless-Omarchy
 
-面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.0 正式发布版**，只在 x86_64、Typeless 2.2.0 的指定构建上验证过；并非 Typeless 或 Omarchy 官方项目。
+面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.1 待发布验证版**，已在 x86_64、Typeless 2.2.1 的指定构建上验证原生输入；保留 2.2.0 补丁配置。并非 Typeless 或 Omarchy 官方项目。
 
 完整安装、构建与限制说明以 [英文 README](README.md) 为准。
 
@@ -61,3 +61,10 @@ Copyright (c) 2026 Hao Hu and contributors。[MIT 许可](LICENSE)仅适用于�
 “本机生成、不分发副本、核对代码指纹”均不等于获得官方授权或完成合规审查。Typeless [服务条款](https://www.typeless.com/terms)第 3、7 节包含与反向工程及修改有关的限制；本项目不宣称已确认适用的例外、许可或法律结论。
 
 本项目未经 Typeless 或 Omarchy 背书；相关名称用于说明兼容目标，不表示获得商标许可或官方支持。完整权利边界以 LICENSE 和 NOTICE 为依据。
+
+
+## 2.2.1 与后续更新
+
+2.2.1 新增了直接通过 GIO/D-Bus 查询 Fcitx 的路径。启动器仅对 Typeless 加载查询适配库，并严格限定主进程 PID、服务、接口、路径和方法；其他调用透传。原有命令行适配仍保留，不修改系统输入法或全局环境。
+
+`python tools/check-vendor.py --archive /opt/Typeless/resources/app.asar` 可只读检查当前官方包的指纹与修补位置，不复制完整程序。每六小时的官方版本监测只读取小型版本元数据，遇到未适配版本使检查失败；不会自动接受新指纹、下载程序或发版。同版本重新构建仍需实际文件校验。我们发布已验证的兼容版后，Omarchy 配方可跟踪此项目的正式 Release；该链路需先由维护者接受 PR。详见 [2.2.1 审计](docs/typeless-2.2.1.md)。
