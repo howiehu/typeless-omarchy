@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **0.5.1 qualification build (not released), x86_64; tested with Typeless 2.2.1; 2.2.0 patch profile retained.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.5.1, x86_64; tested with Typeless 2.2.1; 2.2.0 patch profile retained.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -25,7 +25,7 @@ The official dashboard, tray, login, onboarding and account profile remain in us
 
 ## Tested environment
 
-Omarchy 4.0.6, Hyprland 0.56.2, Fcitx5 5.1.23, official Typeless 2.2.1 (`typeless-bin 2.2.1-1`), x86_64. The user confirmed mixed Shuangpin/voice input, answer-card recovery and normal scrolling with the rendering workaround. Automated coverage and limits are in [validation](docs/validation.md).
+Omarchy 4.0.6, Hyprland 0.56.2, Fcitx5 5.1.23, official Typeless 2.2.1 (`typeless-bin 2.2.1-1`), x86_64. On 2.2.1, real native-library tests passed GTK/cross-workspace Foot insertion with unchanged Shuangpin, and an actual pointer click passed through the idle HUD. Earlier user confirmations of mixed manual/voice input, answer-card recovery and normal scrolling concern the preceding 2.2.0 setup; they do not establish a complete 2.2.1 end-to-end acceptance pass. Automated coverage and limits are in [validation](docs/validation.md).
 
 Other application versions, desktops, architectures and GPUs have not been established as supported. In particular, the answer recovery patch accepts only the exact vendor code fingerprints recorded in `runtime/prepare.py` and `runtime/build221.py`.
 
@@ -36,7 +36,7 @@ Install the official `typeless-bin` separately through Omarchy's AUR installer. 
 Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils`, `lua` (tests) and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.5.0 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.5.1 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package
@@ -134,5 +134,7 @@ This project is not affiliated with or endorsed by Typeless or Omarchy. Their na
 2.2.1 moved the main/autostart code into `dist/main/index.js` and changed renderer bundles. It also added direct GIO/D-Bus Fcitx queries. The launcher scopes `libtypeless-query.so` through `LD_PRELOAD` to Typeless and its children; only the main launch PID's exact Fcitx CurrentInputMethod query is adapted, and only while the passive bridge answers. Other methods/processes, canceled calls, and missing/invalid bridge replies use the real GIO function. The existing command adapter remains for the 2.2.0 path. No global environment or D-Bus service is replaced.
 
 Run `python tools/check-vendor.py --archive /opt/Typeless/resources/app.asar` for a read-only, in-memory fingerprint/anchor check without generating a runtime. The official Linux release page currently contains no detailed 2.2.1 entry; this is not evidence of unchanged behavior. See [the 2.2.1 audit](docs/typeless-2.2.1.md).
+
+For every vendor update, first read the official [release-notes index](https://www.typeless.com/help/release-notes) and [Linux release notes](https://www.typeless.com/help/release-notes/linux), then compare the actual build and record the review before changing compatibility profiles. Follow the [vendor qualification and release procedure](docs/releasing.md#qualify-an-official-typeless-update-first), including when detailed notes are missing.
 
 The official-version watcher runs every six hours and can be dispatched manually. It reads only the small official release metadata, fails visibly for an unqualified version, and does not accept fingerprints, download an app, edit code, publish a release or install anything. It detects version changes, not same-version vendor rebuilds; archive checks remain required for qualification. Source/recipe CI builds on project pushes/tags. The Omarchy contribution watches this project's qualified formal releases; that downstream route requires the package PR to be accepted and its scheduled workflows to run. The vendor binary and compatibility package remain separately managed.

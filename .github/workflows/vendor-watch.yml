@@ -1,4 +1,8 @@
 name: Watch official Typeless releases
+# Before adapting a detected update, read the official release notes:
+# https://www.typeless.com/help/release-notes
+# https://www.typeless.com/help/release-notes/linux
+# Record the review and qualify the actual build using docs/releasing.md.
 on:
   schedule:
     - cron: '17 */6 * * *'

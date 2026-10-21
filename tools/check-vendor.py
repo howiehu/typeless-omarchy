@@ -1,5 +1,10 @@
 #!/usr/bin/python3
-"""Read-only vendor qualification; never accept new hashes or build a runtime."""
+"""Read-only vendor qualification; never accept new hashes or build a runtime.
+
+Before adapting a vendor build, read https://www.typeless.com/help/release-notes
+and https://www.typeless.com/help/release-notes/linux, then follow
+docs/releasing.md's vendor qualification procedure.
+"""
 import argparse
 import importlib.util
 import json
@@ -26,7 +31,7 @@ def main():
     if args.feed:
         if args.feed.stat().st_size>131072:raise ValueError('Vendor feed exceeds size limit')
         expected=feed_version(args.feed.read_text())
-        if expected not in SUPPORTED:raise ValueError('Unqualified vendor release '+expected+'; review interfaces and publish a compatibility release first')
+        if expected not in SUPPORTED:raise ValueError('Unqualified vendor release '+expected+'; first read https://www.typeless.com/help/release-notes/linux and follow docs/releasing.md to review interfaces and publish a compatibility release')
         print('Qualified release version:',expected,'(version only; archive fingerprints require --archive)')
     if args.archive:
         archive=m.Archive(args.archive)

@@ -1,6 +1,8 @@
 # Typeless-Omarchy
 
-面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.1 待发布验证版**，已在 x86_64、Typeless 2.2.1 的指定构建上验证原生输入；保留 2.2.0 补丁配置。并非 Typeless 或 Omarchy 官方项目。
+面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.1 正式版**，已在 x86_64、Typeless 2.2.1 的指定构建上验证原生输入；保留 2.2.0 补丁配置。并非 Typeless 或 Omarchy 官方项目。
+
+2.2.1 已通过实际原生库的 GTK／跨工作区 Foot 输入、双拼保持和空闲浮层下的真实鼠标点击测试。此前用户对语音混合输入、结果卡片及滚动的确认来自 2.2.0 环境，不代表已完成 2.2.1 的全部端到端人工验收；详见[验证记录](docs/validation.md)。
 
 完整安装、构建与限制说明以 [英文 README](README.md) 为准。
 
@@ -64,6 +66,8 @@ Copyright (c) 2026 Hao Hu and contributors。[MIT 许可](LICENSE)仅适用于�
 
 
 ## 2.2.1 与后续更新
+
+每次适配官方更新，先阅读官方[发布说明总页](https://www.typeless.com/help/release-notes)和 [Linux 发布说明](https://www.typeless.com/help/release-notes/linux)，再检查实际构建并记录查阅日期、版本、变更与验证结果，最后调整兼容层。没有详细发布说明不代表没有行为变化。具体步骤见[升级验证与发版流程](docs/releasing.md#qualify-an-official-typeless-update-first)。
 
 2.2.1 新增了直接通过 GIO/D-Bus 查询 Fcitx 的路径。启动器仅对 Typeless 加载查询适配库，并严格限定主进程 PID、服务、接口、路径和方法；其他调用透传。原有命令行适配仍保留，不修改系统输入法或全局环境。
 

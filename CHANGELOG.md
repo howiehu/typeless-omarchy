@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.1 — 2026-10-21 — release
+
+- Qualify the exact official Typeless 2.2.1 build with a guarded three-module profile; retain the existing 2.2.0 profile and refusal of unknown fingerprints.
+- Adapt the new direct GIO/Fcitx input-method query only in the Typeless main process while the passive bridge responds. Preserve the real selected input method and transparently forward unrelated calls.
+- Verify native GTK/cross-workspace Foot input, input-method preservation, normal Wayland startup and idle-HUD click-through on 2.2.1. Add isolated query-scope tests and retain prior UI/update-policy coverage.
+- Monitor official version metadata every six hours without automatically qualifying or publishing vendor builds. Document a release-notes-first qualification procedure with official source links in both READMEs, the checker and the workflow.
+
+## 0.5.0 — 2026-10-20 — release
+
+- Bound HUD pointer hit-testing to numeric control regions; pass clicks through the transparent remainder and preserve pointer position while restoring the input target.
+- Keep in-app background update requests silent and route manual checks to the package workflow, blocking the vendor Debian download/restart-install path in the guarded runtime.
+- Preserve official main/tray/login behavior and record the tested pointer, recording confirmation/cancellation and text-delivery coverage and limits.
+
 ## 0.4.6 — 2026-10-20 — release
 
 - Fix recording HUD cancel/confirm buttons being excluded from Hyprland pointer hit-testing by `no_focus`. Keep initial/hover focus suppression.

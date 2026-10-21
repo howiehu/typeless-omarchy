@@ -2,6 +2,8 @@
 
 Audit date: 2026-10-21. The official [Linux release-notes page](https://www.typeless.com/help/release-notes/linux) has a heading but no detailed 2.2.1 entry in the fetched page. The [Linux update feed](https://typeless-static.com/desktop-release/latest-linux.yml) identifies 2.2.1 and releaseDate 2026-10-19T12:15:03.255Z, archive URLs and checksums, without change descriptions. No claim of unchanged behavior follows from this absence.
 
+The official [release-notes index](https://www.typeless.com/help/release-notes) is the starting point for future reviews. Follow the [vendor qualification procedure](releasing.md#qualify-an-official-typeless-update-first) before changing any profile; this audit records the actual-build investigation required when detailed notes are unavailable.
+
 ## Observed changes
 
 - The old bootstrap and startup modules are consolidated into `dist/main/index.js`. Autostart generation, same-name desktop cleanup, HUD shape updates and updater IPC remain. A separate profile qualifies the new file and the two affected renderer modules, preserving the old four-module 2.2.0 profile.
