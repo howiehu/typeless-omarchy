@@ -4,6 +4,8 @@ This is an independent compatibility project. Keep contributions focused on inpu
 
 ## Development
 
+Use the [reusable QA procedure](docs/qa.md) for the coverage matrix, automated runner, real-desktop probes and manual release checklist. Keep passed, blocked and untested cases distinct.
+
 Use Arch Linux with `base-devel`, CMake, Fcitx5 development files, json-c, GLib, Python, Lua (headless focus tests) and dbus. From a clean checkout:
 
 ```sh

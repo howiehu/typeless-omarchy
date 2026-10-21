@@ -27,10 +27,7 @@ jobs:
           useradd --create-home builder
           chown -R builder:builder "$GITHUB_WORKSPACE"
           runuser -u builder -- bash -euo pipefail -c '
-            bash -n bin/typeless-omarchy
-            cmake -S . -B build-ci -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release
-            cmake --build build-ci --parallel 2
-            ctest --test-dir build-ci --output-on-failure
+            python tools/qa.py --suite headless --build-dir build-ci --report /tmp/typeless-headless.json
             python tools/stage-package.py /tmp/typeless-package
             cd /tmp/typeless-package
             makepkg --noconfirm --cleanbuild

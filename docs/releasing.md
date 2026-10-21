@@ -16,7 +16,7 @@ The scheduled version watcher only detects unqualified version numbers. It does 
 ## Publish a qualified compatibility release
 
 1. Set the version in `CMakeLists.txt`, update the README's install tag and add a changelog entry. `tools/stage-package.py` reads the CMake version.
-2. Run a clean independent-directory CMake build, CTest and the generated local-source `makepkg` recipe. Run applicable desktop acceptance tests separately; keep human confirmations distinct from automated checks.
+2. Follow [the QA procedure](qa.md): run a clean independent-directory CMake build, CTest and the generated local-source `makepkg` recipe, then applicable installed-build probes and manual M01–M09 cases. Record the source/package identity, report links, failures and untested scope using its acceptance template; keep human confirmations distinct from automated checks.
 3. Inspect the git file list. No proprietary archives, generated runtime copies, binaries, account files, private logs or desktop captures belong in the source release. Verify LICENSE/NOTICE scope, English/Chinese consistency and installed notice files. Preserve attribution for third-party matching fragments; do not present technical guards as vendor authorization.
 4. Push the reviewed commit to `main` and wait for the Arch CI build to pass. Record the source commit and CI URL in the release notes. Do not infer GUI coverage from CI.
 5. Tag that exact commit with `v<version>`. Create the project source archive with `git archive --format=tar --prefix=typeless-omarchy-<version>/ <tag> | gzip -n`. SHA-256 the archive, substitute `@VERSION@` and `@SHA256@` in `packaging/PKGBUILD.in`, and build/test that recipe against the archive.

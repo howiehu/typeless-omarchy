@@ -2,6 +2,8 @@
 
 This is a chronological record of development evidence. The release scope and current behavior are summarized in the README and `docs/upstream-report.md`. Historical prototype paths below are rollback references, not current installation instructions.
 
+For repeatable current checks, use the [QA procedure and acceptance template](qa.md). The historical confirmations below do not automatically qualify later vendor or compatibility builds.
+
 The minimal reproduction is `python tests/live-input.py --terminal`. It opens an isolated Foot process running `read`, calls the same native `insertText` symbol as Typeless with synthetic text, and compares the captured result. It never types into an existing user shell. The test restores the original workspace and focus. On this machine Hyprland uses Lua dispatch, so the harness uses `hl.dsp.focus`.
 
 Require the bridge, rather than accepting a vendor clipboard fallback:
@@ -108,3 +110,9 @@ Release 0.5.0 correction and package update policy (2026-10-20):
 - After installing 0.5.1, the normal launcher started the actual 2.2.1 private runtime with native Wayland main/idle Status windows and no Hyprland configuration errors. The installed query adapter passed both GTK and cross-workspace Foot tests again. A real uinput click reached an isolated GTK button beneath the idle HUD, with stable pointer and focus. The official package reported 364 files, zero altered files.
 - No recording stream was active before the controlled process switch; observed Typeless playback streams were unmuted before/after it. This is not a complete dictation mute/restore test and does not establish a fix for the earlier browser audio incident. Fresh 2.2.1 manual speech/confirm/cancel/result-card acceptance remains separate from these native-library and routing tests.
 - Post-release user feedback on 2026-10-21: input currently appears normal on the running 2.2.1 / compatibility 0.5.1 setup. This provides user-observed input confirmation in addition to the isolated native-library tests. The feedback did not separately confirm recording confirm/cancel, result cards or a complete background-audio mute/restore cycle; those are not marked passed by this report.
+
+Reusable QA tooling (2026-10-21, after 0.5.1):
+
+- Consolidated source checks under `tools/qa.py`, with distinct opt-in desktop/read-only, synthetic-input and real-pointer suites. The source suite is now also the CI entry point. Structured reports retain failure/blocked status and leave all manual cases unapproved; captured application output is excluded.
+- The runner's source suite passed locally; the final staged package built and passed ten CTest suites, including report privacy, failure/blocked handling and report-preservation regressions. The real desktop read-only suite passed vendor fingerprints/file integrity, installed versions, compositor configuration and native Wayland checks. A first attempt incorrectly treated Hyprland's empty-string config-error list as an error; the corrected parser has a regression test.
+- No new recording, application restart or input-method configuration change was needed for this tooling validation. The newly grouped input/pointer suites reuse the earlier probes; they were not rerun as part of this tooling-only change. See `docs/qa.md` for the current M01–M09 manual acceptance cases and reproducible evidence template.

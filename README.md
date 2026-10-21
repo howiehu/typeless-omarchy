@@ -7,6 +7,8 @@ Independent compatibility tools for the official Typeless Linux app on Omarchy, 
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
+Maintainers: use the [reusable QA runner, coverage matrix and manual acceptance checklist](docs/qa.md) before qualifying updates or publishing releases.
+
 ## What it changes
 
 | Area | Behavior |

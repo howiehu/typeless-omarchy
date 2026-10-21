@@ -12,13 +12,14 @@ version = re.search(r"project\(typeless-omarchy VERSION ([0-9.]+)", (root / "CMa
 target = Path(sys.argv[1]).resolve()
 target.mkdir(parents=True, exist_ok=True)
 files = ["CMakeLists.txt", "src/voice.cpp", "src/query.cpp", "tests/query.py", "tests/query-backend.cpp", "data/typeless-voice-addon.conf",
+         "tools/qa.py", "tests/qa.py", "docs/qa.md",
          "runtime/prepare.py", "runtime/build221.py", "tests/build221.py", "tests/vendor-feed.py", "tools/check-vendor.py", "runtime/update-policy.mjs", "tests/update-policy-test.mjs", "tests/runtime.py", "tests/desktop.py", "tests/status-focus.lua", "tests/hud-pointer.cjs", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
          "tests/native-insert.py", "tests/live-input.py", "tests/hud-focus.py", "tests/pointer-click.py", "tools/install-user.py",
          "tools/stage-package.py", "docs/validation.md", "docs/typeless-2.2.1.md", "LICENSE", "NOTICE", "README.md"]
 for name in files:
-    shutil.copy2(root / name, target / ("build221-test.py" if name == "tests/build221.py" else Path(name).name))
-names = ["build221-test.py" if name == "tests/build221.py" else Path(name).name for name in files]
+    shutil.copy2(root / name, target / ("build221-test.py" if name == "tests/build221.py" else "qa-test.py" if name == "tests/qa.py" else Path(name).name))
+names = ["build221-test.py" if name == "tests/build221.py" else "qa-test.py" if name == "tests/qa.py" else Path(name).name for name in files]
 checksums = [hashlib.sha256((target / name).read_bytes()).hexdigest() for name in names]
 recipe = '''# Package-local compatibility sources; no vendor binary redistribution.
 pkgname=typeless-omarchy
@@ -40,6 +41,9 @@ recipe += "sha256sums=(" + "\n            ".join(repr(value) for value in checks
 recipe += '''
 prepare() {
   mkdir -p src data bin tests tools docs helpers runtime
+  cp qa.py tools/
+  cp qa-test.py tests/qa.py
+  cp qa.md docs/
   cp prepare.py update-policy.mjs runtime/
   cp build221.py runtime/
   cp build221-test.py tests/build221.py
