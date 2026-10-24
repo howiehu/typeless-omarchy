@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2 — 2026-10-24 — release
+
+- Fix a 0.5.0 regression that hung Omarchy's Super+K source scanner: its callable-table API proxy never terminates under `ipairs`. Skip compositor integration before any runtime operations when the real window enumeration function is absent.
+- Guard new Lua includes; migrate recognized plain and user-guarded blocks, collapse duplicate managed blocks, and remove either form. Preserve unrelated configuration and refuse unknown/malformed marked blocks before changing integration files.
+- Add a bounded source-scan regression and migration/idempotence/removal cases. Include the reusable QA runner and manual acceptance checklist introduced after 0.5.1.
+
 ## 0.5.1 — 2026-10-21 — release
 
 - Qualify the exact official Typeless 2.2.1 build with a guarded three-module profile; retain the existing 2.2.0 profile and refusal of unknown fingerprints.

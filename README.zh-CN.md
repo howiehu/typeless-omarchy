@@ -2,7 +2,9 @@
 
 维护与升级请使用[可复用 QA 流程](docs/qa.md)：统一自动化入口、真实桌面探针、人工验收清单和版本验收模板。自动通过不等于人工端到端验收完成。
 
-面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.1 正式版**，已在 x86_64、Typeless 2.2.1 的指定构建上验证原生输入；保留 2.2.0 补丁配置。并非 Typeless 或 Omarchy 官方项目。
+面向 Omarchy / Hyprland / Fcitx5 的独立兼容层。当前为 **0.5.2 正式版**，已在 x86_64、Typeless 2.2.1 的指定构建上验证原生输入；保留 2.2.0 补丁配置。并非 Typeless 或 Omarchy 官方项目。
+
+0.5.2 修复 Omarchy 扫描 Lua 配置时 Super+K 菜单卡死：兼容脚本会识别模拟 API，跳过窗口遍历、事件和定时器；setup／repair／remove 正确处理旧加载块、用户已加的保护块及重复块，并保留块外配置。升级后运行 `typeless-omarchy-setup --repair`、`hyprctl reload`，再确认 `hyprctl configerrors` 无错误。安装新版前保留现有保护；本修复不需要重启 Typeless 或 Fcitx。
 
 2.2.1 已通过实际原生库的 GTK／跨工作区 Foot 输入、双拼保持和空闲浮层下的真实鼠标点击测试。此前用户对语音混合输入、结果卡片及滚动的确认来自 2.2.0 环境，不代表已完成 2.2.1 的全部端到端人工验收；详见[验证记录](docs/validation.md)。
 

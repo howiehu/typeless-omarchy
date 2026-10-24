@@ -23,6 +23,7 @@ Use new report/staging directories for independent runs. The runner returns nonz
 | Package update policy | `update-policy` | Managed IPC behavior and blocked download/install routes |
 | Passive input protocol | `protocol` | Isolated D-Bus/Fcitx protocol and input guards |
 | QA reporting | `qa-report` | Fail/blocked status is retained, manual cases are not auto-approved, captured output is excluded and reports are not overwritten |
+| Omarchy source scanning | `config-scan` | Callable-table mock loading completes within a bounded deadline, without compositor runtime operations; existing focus tests separately exercise the real-function branch |
 
 These tests do not require an account or vendor binaries and do not restart the real desktop Fcitx. Preserve failure regressions instead of asserting only the current implementation's shape.
 
@@ -59,7 +60,7 @@ Use synthetic, non-private phrases. Record each result as `pass`, `fail`, `block
 | M02 | Record a short phrase, mouse-confirm; repeat and mouse-cancel. | Buttons clickable, confirm delivers only to the original field, cancel inserts nothing, focus/cursor stable. |
 | M03 | Click normal web buttons with idle HUD; while controls are visible, click transparent areas outside them. | Underlying controls work, no invisible interception or cursor jump; visible controls still work. |
 | M04 | Invoke Ask Anything/translation without an editable target; test the selected-text/editable route too. Scroll a long result, copy and close it. | Correct official card/routing, interactive actions, no rectangular displacement/flicker. |
-| M05 | Cold-launch from menu; check protocol association and official startup toggle/autostart route. | One visible Typeless entry, compatibility launcher used, startup flags and enabled state preserved. Test a full login if claimed; simulated autostart is weaker evidence. |
+| M05 | Cold-launch from menu; check protocol association and official startup toggle/autostart route. Open Super+K and generate the keybinding list without using a previous cache. | One visible Typeless entry, compatibility launcher used, startup flags and enabled state preserved; shortcut scanning/menu completes without a stuck Lua process. Test a full login if claimed; simulated autostart is weaker evidence. |
 | M06 | On a separate clean test profile, complete first login/onboarding and protocol callback. | No blocked/hidden required windows; main window and official tray behave normally. Existing account success does not qualify first login. |
 | M07 | Leave app idle, then use About's manual update check. | No recurring updater popup; package-policy explanation; no vendor Debian download/install. Do not attempt installation on the host. |
 | M08 | Play browser audio, note per-stream mute state; with official background-mute enabled, dictate then stop normally; repeat with cancel, then with setting disabled. | Enabled setting restores each stream's original mute state after both normal paths; disabled setting leaves audio alone. Preserve intentionally muted streams and original settings. Observe once more after normal app exit. |

@@ -3,7 +3,7 @@
 [![Build and test](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml/badge.svg)](https://github.com/howiehu/typeless-omarchy/actions/workflows/ci.yml)
 [![Original contributions: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.5.1, x86_64; tested with Typeless 2.2.1; 2.2.0 patch profile retained.** This project is not affiliated with or endorsed by Typeless or Omarchy.
+Independent compatibility tools for the official Typeless Linux app on Omarchy, Hyprland and Fcitx5. **Release 0.5.2, x86_64; tested with Typeless 2.2.1; 2.2.0 patch profile retained.** This project is not affiliated with or endorsed by Typeless or Omarchy.
 
 [中文说明](README.zh-CN.md) · [Releases](https://github.com/howiehu/typeless-omarchy/releases) · [Technical report](docs/upstream-report.md) · [Validation](docs/validation.md)
 
@@ -38,7 +38,7 @@ Install the official `typeless-bin` separately through Omarchy's AUR installer. 
 Install the build dependencies with your package manager: `base-devel`, `cmake`, `fcitx5`, `json-c`, `glib2`, `python`, `dbus`, `systemd`, `desktop-file-utils`, `lua` (tests) and `git`. Then, as your regular desktop user:
 
 ```sh
-git clone --branch v0.5.1 --depth 1 https://github.com/howiehu/typeless-omarchy.git
+git clone --branch v0.5.2 --depth 1 https://github.com/howiehu/typeless-omarchy.git
 cd typeless-omarchy
 python tools/stage-package.py /tmp/typeless-package
 cd /tmp/typeless-package
@@ -64,6 +64,8 @@ typeless-omarchy-setup --repair
 ```
 
 Repair migrates older setup records without restarting Fcitx and removes the managed 0.4.4 independent duplicate. It preserves the original desktop backup and refuses to overwrite later menu edits. The vendor uses a single-instance lock, so an already-running instance must be closed for new runtime patches to take effect.
+
+0.5.2 fixes Super+K hanging during Omarchy's simulated Lua config scan. The packaged Lua skips runtime operations when `hl.get_windows` is a scanner proxy rather than a function. Setup/repair also guards the include, migrates recognized plain/guarded blocks and collapses duplicates; removal handles both forms. Other user code is preserved and unrecognized marked-block edits are refused before integration changes. After upgrading from 0.5.0/0.5.1, run `typeless-omarchy-setup --repair`, then `hyprctl reload` and `hyprctl configerrors`. Keep any existing user-side guard until the corrected package is installed. This fix needs no Typeless or Fcitx restart.
 
 ## How the compatibility layer works
 

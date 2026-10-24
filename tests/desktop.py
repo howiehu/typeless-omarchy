@@ -19,6 +19,32 @@ AUTO = ('[Desktop Entry]\nExec=env TYPELESS_SKIP_SECRET_STORE=1 "/opt/Typeless/t
         '--system-startup-silent-launch --password-store=basic\nHidden=false\n')
 
 class DesktopTest(unittest.TestCase):
+    def test_hypr_config_migrates_plain_guarded_and_duplicate_blocks(self):
+        plain = '-- typeless-omarchy begin\ndofile("/usr/share/typeless-omarchy/typeless.lua")\n-- typeless-omarchy end\n'
+        guarded = '-- typeless-omarchy begin\nif type(hl.get_windows) == "function" then\n\tdofile("/usr/share/typeless-omarchy/typeless.lua")\nend\n-- typeless-omarchy end\n'
+        for blocks in (plain, guarded, plain + guarded, guarded + plain):
+            with self.subTest(blocks=blocks):
+                original = 'local user_before = true\n' + blocks + 'local user_after = true\n'
+                repaired = m.hypr_config(original)
+                self.assertEqual(repaired.count('-- typeless-omarchy begin'), 1)
+                self.assertIn('if type(hl.get_windows) == "function" then', repaired)
+                self.assertEqual(m.hypr_config(repaired), repaired)
+                self.assertEqual(m.hypr_config(repaired, remove=True),
+                                 'local user_before = true\nlocal user_after = true\n')
+
+    def test_hypr_config_refuses_custom_or_broken_marked_blocks(self):
+        for text in ('-- typeless-omarchy begin\ncustom()\n-- typeless-omarchy end\n',
+                     '-- typeless-omarchy begin\n', '-- typeless-omarchy end\n'):
+            with self.subTest(text=text), self.assertRaisesRegex(SystemExit, 'Hyprland'):
+                m.hypr_config(text)
+
+    def test_hypr_config_fresh_setup_does_not_duplicate_on_repair(self):
+        before = 'local user_setting = true\n'
+        installed = m.hypr_config(before)
+        self.assertTrue(installed.startswith(before))
+        self.assertEqual(m.hypr_config(installed), installed)
+        self.assertNotIn('typeless-omarchy', m.hypr_config(installed, remove=True))
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

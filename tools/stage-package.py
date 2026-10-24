@@ -12,7 +12,7 @@ version = re.search(r"project\(typeless-omarchy VERSION ([0-9.]+)", (root / "CMa
 target = Path(sys.argv[1]).resolve()
 target.mkdir(parents=True, exist_ok=True)
 files = ["CMakeLists.txt", "src/voice.cpp", "src/query.cpp", "tests/query.py", "tests/query-backend.cpp", "data/typeless-voice-addon.conf",
-         "tools/qa.py", "tests/qa.py", "docs/qa.md",
+         "tools/qa.py", "tests/qa.py", "docs/qa.md", "tests/config-scan.py",
          "runtime/prepare.py", "runtime/build221.py", "tests/build221.py", "tests/vendor-feed.py", "tools/check-vendor.py", "runtime/update-policy.mjs", "tests/update-policy-test.mjs", "tests/runtime.py", "tests/desktop.py", "tests/status-focus.lua", "tests/hud-pointer.cjs", "tests/result-routing.cjs", "helpers/gdbus", "data/typeless.lua", "bin/typeless-omarchy",
          "bin/typeless-omarchy-setup", "tests/protocol.py", "tests/input-probe.py",
          "tests/native-insert.py", "tests/live-input.py", "tests/hud-focus.py", "tests/pointer-click.py", "tools/install-user.py",
@@ -43,6 +43,7 @@ prepare() {
   mkdir -p src data bin tests tools docs helpers runtime
   cp qa.py tools/
   cp qa-test.py tests/qa.py
+  cp config-scan.py tests/
   cp qa.md docs/
   cp prepare.py update-policy.mjs runtime/
   cp build221.py runtime/

@@ -3,6 +3,7 @@
 import base64
 import json
 import os
+import re
 from pathlib import Path
 import shlex
 import subprocess
@@ -16,7 +17,31 @@ config = home / ".config/hypr/hyprland.lua"
 desktop = data / "applications/typeless-omarchy.desktop"
 legacy = data / "applications/typeless.desktop"
 autostart = Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / "autostart/typeless.desktop"
-include = '\n-- typeless-omarchy begin\ndofile("/usr/share/typeless-omarchy/typeless.lua")\n-- typeless-omarchy end\n'
+include = '\n-- typeless-omarchy begin\nif type(hl.get_windows) == "function" then\n  dofile("/usr/share/typeless-omarchy/typeless.lua")\nend\n-- typeless-omarchy end\n'
+
+
+def hypr_config(text, remove=False):
+    """Migrate known managed blocks only; preserve everything outside them."""
+    pattern = re.compile(r'^[ \t]*-- typeless-omarchy begin[ \t]*\n(.*?)'
+                         r'^[ \t]*-- typeless-omarchy end[ \t]*(?:\n|$)', re.M | re.S)
+    matches = list(pattern.finditer(text))
+    markers = re.findall(r'^[ \t]*-- typeless-omarchy (?:begin|end)[ \t]*$', text, re.M)
+    load = r'''dofile\s*\(\s*["']/usr/share/typeless-omarchy/typeless\.lua["']\s*\)'''
+    guarded = r'''if\s+type\s*\(\s*hl\.get_windows\s*\)\s*==\s*["']function["']\s+then\s+''' + load + r'\s+end'
+    if len(markers) != 2 * len(matches) or any(
+            not re.fullmatch(r'\s*(?:' + load + '|' + guarded + r')\s*', match[1])
+            for match in matches):
+        raise SystemExit("Hyprland compatibility block changed or incomplete; reconcile it before repair/removal")
+    if not matches:
+        return text if remove else text + include
+    parts, end = [], 0
+    for index, match in enumerate(matches):
+        parts.append(text[end:match.start()])
+        if not remove and index == 0:
+            parts.append(include.lstrip('\n'))
+        end = match.end()
+    parts.append(text[end:])
+    return ''.join(parts)
 
 
 def snapshot(path):
@@ -147,10 +172,12 @@ def main():
         record = {}
     if not config.exists() or not Path("/usr/lib/fcitx5/typeless-voice.so").exists():
         raise SystemExit("Install the compatibility package in an Omarchy session first")
+    # Validate user-owned Lua before changing menu files or setup state.
+    configured = hypr_config(config.read_text(), remove=remove)
     previous = call("CurrentInputMethod")[0] if not repair else None
     if remove:
         remove_integration(record)
-        config.write_text(config.read_text().replace(include, ""))
+        config.write_text(configured)
         state.unlink()
     else:
         text = Path("/usr/share/applications/typeless.desktop").read_text().replace(
@@ -160,8 +187,8 @@ def main():
         install_menu(record, text)
         state.parent.mkdir(parents=True, exist_ok=True)
         state.write_text(json.dumps(record))
-        if include not in config.read_text():
-            config.write_text(config.read_text() + include)
+        if configured != config.read_text():
+            config.write_text(configured)
     # Repair only launch integration; do not interrupt the working input method.
     if not repair:
         restart_input_method(previous)

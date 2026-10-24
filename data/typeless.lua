@@ -1,3 +1,8 @@
+-- Omarchy's source scanner substitutes callable proxy tables for runtime APIs.
+-- Iterating that proxy with ipairs never terminates. Skip the entire runtime
+-- integration before registering rules/events/timers in a scan environment.
+if type(hl.get_windows) ~= "function" then return end
+
 -- The recording HUD maps as Status; interactive answers map as AI result.
 -- Keep the vendor's interactive controls clickable without focusing on show/hover.
 o.window({ class = "^Typeless$", title = "^Status.*$" }, {
